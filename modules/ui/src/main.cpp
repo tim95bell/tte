@@ -48,17 +48,17 @@ namespace tte { namespace ui {
                 Length buffer_length = engine::get_buffer_length(buffer);
 
                 if (cursor.line < buffer_length) {
-                    const char* line = engine::line_to_c_string(buffer, cursor.line);
+                    char* line = engine::line_to_c_string(buffer, cursor.line);
                     TTE_ASSERT(line);
                     U32 x = platform_layer::get_cursor_x(*font, line, cursor.character);
-                    free((void*)line);
+                    free(static_cast<void*>(line));
                     U32 y = static_cast<U32>(cursor.line * font_size);
                     platform_layer::fill_rect(*window, x, y, static_cast<U32>(font_size * 0.1f), font_size, 0xFF, 0, 0);
                 }
 
                 for (Length i = 0; i < buffer_length; ++i) {
                     if (!engine::line_empty(buffer, i)) {
-                        const char* line = engine::line_to_c_string(buffer, i);
+                        char* line = engine::line_to_c_string(buffer, i);
                         TTE_ASSERT(line);
                         platform_layer::render_text(*window,
                             *font,
@@ -68,7 +68,7 @@ namespace tte { namespace ui {
                             0xFF,
                             0x39,
                             0xA1);
-                        free((void*)line);
+                        free(static_cast<void*>(line));
                     }
                 }
 

@@ -1,11 +1,15 @@
 
 cmake_minimum_required(VERSION 3.15)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 project(tte VERSION 0.0.0 LANGUAGES CXX)
 
 set(BUILD_SHARED_LIBS FALSE)
 
 option(TTE_UNIT_TEST "Build Unit Tests" TRUE)
+option(TTE_WARNINGS_AS_ERRORS "Treat Warnings As Errors" TRUE)
 
 # TODO(TB): how to set SDL2_DIR, SDL2_image_DIR, SDL2_ttf_DIR for both debug and release?
 #set(SDL2_DIR "./build/SDL2/$<IF:$<CONFIG:Debug>,Debug,Release>/lib/cmake/SDL2")

@@ -16,9 +16,10 @@ namespace tte { namespace engine {
     extern bool insert_lines(Buffer&,
         const Length number_of_lines,
         const Length line_index,
-        const Char** data_array,
+        Char const* const* const data_array,
         const Length* data_length_array);
-    extern bool insert_lines(Buffer&, const Length number_of_lines, const Length line_index, const Char** data_array);
+    extern bool
+    insert_lines(Buffer&, const Length number_of_lines, const Length line_index, Char const* const* const data_array);
     extern bool insert_character(Buffer&, const Length line_index, const Length character_index, const Char character);
     extern bool insert_characters(Buffer&,
         const Length line_index,
@@ -39,9 +40,9 @@ namespace tte { namespace engine {
     // line_to_c_string
     // caller owns returned memory
     // may return nullptr
-    extern const char* line_to_c_string(Buffer&, const Length line_index);
+    extern char* line_to_c_string(Buffer&, const Length line_index);
     // buffer_to_c_string
     // caller owns returned memory
-    extern const char* buffer_to_c_string(Buffer&);
+    extern char* buffer_to_c_string(Buffer&);
     extern bool line_empty(Buffer& buffer, const Length line_index);
 }}

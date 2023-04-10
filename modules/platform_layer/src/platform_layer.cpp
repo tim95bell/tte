@@ -75,7 +75,7 @@ namespace tte { namespace platform_layer {
     }
 
     Window* create_window(U32 width, U32 height) {
-        Window* result = (Window*)malloc(sizeof(Window));
+        Window* result = static_cast<Window*>(malloc(sizeof(Window)));
         result->window = SDL_CreateWindow("TTE",
             SDL_WINDOWPOS_UNDEFINED,
             SDL_WINDOWPOS_UNDEFINED,
@@ -162,7 +162,7 @@ namespace tte { namespace platform_layer {
             return nullptr;
         }
 
-        Font* result = (Font*)malloc(sizeof(Font));
+        Font* result = static_cast<Font*>(malloc(sizeof(Font)));
         result->font = font;
         return result;
     }
@@ -185,7 +185,7 @@ namespace tte { namespace platform_layer {
         TTE_ASSERT(line);
         S32 w, h;
         if (cursorIndex < strlen(line)) {
-            char* substring = (char*)malloc(sizeof(char) * cursorIndex + 1);
+            char* substring = static_cast<char*>(malloc(sizeof(char) * cursorIndex + 1));
             memcpy(substring, line, cursorIndex);
             substring[cursorIndex] = '\0';
             const bool success = TTF_SizeUTF8(font.font, substring, &w, &h) == 0;
@@ -212,14 +212,14 @@ namespace tte { namespace platform_layer {
         if (std::filesystem::directory_entry(fonts_directory_path).is_directory()) {
             Length size = 0;
             Length capacity = 5;
-            *fonts = (Font*)malloc(sizeof(Font) * capacity);
+            *fonts = static_cast<Font*>(malloc(sizeof(Font) * capacity));
             for (const auto& x : std::filesystem::directory_iterator(fonts_directory_path)) {
                 if (x.is_regular_file() && x.path().extension() == ".ttf") {
                     if (Font* font = open_font(std::filesystem::absolute(x.path()).c_str(), font_size)) {
                         if (size == capacity) {
                             const Length old_capacity = capacity;
                             capacity *= 2;
-                            Font* new_fonts = (Font*)malloc(sizeof(Font) * capacity);
+                            Font* new_fonts = static_cast<Font*>(malloc(sizeof(Font) * capacity));
                             memcpy(new_fonts, *fonts, old_capacity);
                             free(*fonts);
                             *fonts = new_fonts;

@@ -22,9 +22,9 @@ static void assert_buffer_state(tte::engine::Buffer& buffer, std::vector<std::st
     ASSERT_EQ(tte::engine::get_buffer_length(buffer), lines.size());
     for (tte::Length i = 0; i < lines.size(); ++i) {
         ASSERT_EQ(tte::engine::get_line_length(buffer, i), lines[i].size());
-        const char* line_string = tte::engine::line_to_c_string(buffer, i);
+        char* line_string = tte::engine::line_to_c_string(buffer, i);
         ASSERT_EQ(line_string, lines[i]);
-        free((void*)line_string);
+        free(static_cast<void*>(line_string));
     }
 }
 
@@ -89,7 +89,7 @@ static void test_insert_line(std::vector<std::string> lines,
     {
         tte::engine::Buffer& buffer = create_buffer(lines);
 
-        char* line_without_null_terminator = (char*)malloc(sizeof(char) * line.size());
+        char* line_without_null_terminator = static_cast<char*>(malloc(sizeof(char) * line.size()));
         memcpy(line_without_null_terminator, line.c_str(), line.size());
         ASSERT_EQ(tte::engine::insert_line(buffer, line_index, line_without_null_terminator, line.size()),
             expected_result);
@@ -218,14 +218,15 @@ static void test_insert_lines(std::vector<std::string> lines,
     tte::engine::Buffer& buffer = create_buffer(lines);
 
     const std::size_t number_of_lines = lines_to_insert.size();
-    char** c_lines = (char**)malloc(sizeof(char*) * number_of_lines);
+    char** c_lines = static_cast<char**>(malloc(sizeof(char*) * number_of_lines));
     for (std::size_t i = 0; i < lines_to_insert.size(); ++i) {
         std::size_t line_length = lines_to_insert[i].size();
-        c_lines[i] = (char*)malloc(sizeof(char) * (line_length + 1));
+        c_lines[i] = static_cast<char*>(malloc(sizeof(char) * (line_length + 1)));
         memcpy(c_lines[i], lines_to_insert[i].c_str(), line_length);
         c_lines[i][line_length] = '\0';
     }
-    ASSERT_EQ(tte::engine::insert_lines(buffer, number_of_lines, line_index, (const char**)c_lines), expected_result);
+    ASSERT_EQ(tte::engine::insert_lines(buffer, number_of_lines, line_index, const_cast<const char**>(c_lines)),
+        expected_result);
     assert_buffer_state(buffer, expected_lines);
     for (std::size_t i = 0; i < lines_to_insert.size(); ++i) {
         free(c_lines[i]);
@@ -1053,9 +1054,9 @@ TEST(engine, deleteCharactersManyAtEndOfLineWithManyCharactersWhereDeletionDoesN
 // #region const char* line_to_c_string(Buffer&, const Length line_index);
 static void test_line_to_c_string(std::vector<std::string> lines, tte::Length index, const char* expected_result) {
     tte::engine::Buffer& buffer = create_buffer(lines);
-    const char* result = tte::engine::line_to_c_string(buffer, index);
+    char* result = tte::engine::line_to_c_string(buffer, index);
     ASSERT_STREQ(result, expected_result);
-    free((void*)result);
+    free(static_cast<void*>(result));
 }
 
 TEST(engine, lineToCStringAtInvalidIndexOfEmptyBuffer) { test_line_to_c_string({}, 0, nullptr); }
@@ -1114,9 +1115,9 @@ TEST(engine, lineToCStringAtEndOfBufferWithManyLineWithManyCharacters) {
 // #region const char* buffer_to_c_string(Buffer&);
 TEST(engine, bufferToCStringWithEmptyBuffer) {
     tte::engine::Buffer& buffer = create_buffer({});
-    const char* result = tte::engine::buffer_to_c_string(buffer);
+    char* result = tte::engine::buffer_to_c_string(buffer);
     ASSERT_STREQ(result, "");
-    free((void*)result);
+    free(static_cast<void*>(result));
 }
 
 TEST(engine, bufferToCStringWithNonEmptyBuffer) {
@@ -1137,8 +1138,8 @@ TEST(engine, bufferToCStringWithNonEmptyBuffer) {
         expected_result += line + "\n";
     }
     tte::engine::Buffer& buffer = create_buffer({lines});
-    const char* result = tte::engine::buffer_to_c_string(buffer);
+    char* result = tte::engine::buffer_to_c_string(buffer);
     ASSERT_STREQ(result, expected_result.c_str());
-    free((void*)result);
+    free(static_cast<void*>(result));
 }
 // #endregion

@@ -21,7 +21,7 @@ namespace tte { namespace engine {
         TTE_ASSERT(line)
         // next could be nullptr
         Line* const next = *line;
-        *line = (Line*)malloc(sizeof(Line));
+        *line = static_cast<Line*>(malloc(sizeof(Line)));
         memset(*line, 0, sizeof(Line));
         (*line)->next = next;
         TTE_ASSERT(*line);
@@ -33,8 +33,8 @@ namespace tte { namespace engine {
         TTE_ASSERT(data != nullptr || data_length == 0);
         insert_empty_line_internal(line);
         TTE_ASSERT(*line);
-        (*line)->data = (Char*)malloc(sizeof(const Char) * data_length);
-        memcpy((*line)->data, (void*)data, data_length);
+        (*line)->data = static_cast<Char*>(malloc(sizeof(const Char) * data_length));
+        memcpy((*line)->data, static_cast<const void*>(data), data_length);
         (*line)->length = data_length;
     }
 
@@ -67,7 +67,7 @@ namespace tte { namespace engine {
     static bool
     insert_characters(Line& line, const Length character_index, const Char* data, const Length data_length) {
         if (character_index <= line.length) {
-            Char* new_data = (Char*)malloc(sizeof(Char) * (line.length + data_length));
+            Char* new_data = static_cast<Char*>(malloc(sizeof(Char) * (line.length + data_length)));
             memcpy(new_data, line.data, character_index);
             memcpy(new_data + character_index, data, data_length);
             memcpy(new_data + character_index + data_length,
@@ -105,7 +105,7 @@ namespace tte { namespace engine {
     // #endregion
 
     Buffer& create_buffer() {
-        Buffer* buffer = (Buffer*)malloc(sizeof(Buffer));
+        Buffer* buffer = static_cast<Buffer*>(malloc(sizeof(Buffer)));
         memset(buffer, 0, sizeof(Buffer));
         return *buffer;
     }
@@ -148,20 +148,23 @@ namespace tte { namespace engine {
         return number_of_lines == 0;
     }
 
-    bool insert_lines(Buffer& buffer, const Length number_of_lines, const Length line_index, const Char** data_array) {
-        Length* line_lengths = (Length*)malloc(sizeof(Length) * number_of_lines);
+    bool insert_lines(Buffer& buffer,
+        const Length number_of_lines,
+        const Length line_index,
+        Char const* const* const data_array) {
+        Length* line_lengths = static_cast<Length*>(malloc(sizeof(Length) * number_of_lines));
         for (Length i = 0; i < number_of_lines; ++i) {
             line_lengths[i] = strlen(data_array[i]);
         }
         const bool result = insert_lines(buffer, number_of_lines, line_index, data_array, line_lengths);
-        free((void*)line_lengths);
+        free(static_cast<void*>(line_lengths));
         return result;
     }
 
     bool insert_lines(Buffer& buffer,
         const Length number_of_lines,
         const Length line_index,
-        const Char** data_array,
+        Char const* const* const data_array,
         const Length* data_length_array) {
         if (Line** line = get_line_internal(buffer, line_index)) {
             for (Length i = 0; i < number_of_lines; ++i) {
@@ -177,7 +180,7 @@ namespace tte { namespace engine {
     bool insert_character(Buffer& buffer, const Length line_index, const Length character_index, const Char character) {
         if (Line** line = get_line_internal(buffer, line_index); line && *line) {
             if (character_index <= (*line)->length) {
-                Char* new_data = (Char*)malloc(sizeof(Char) * ((*line)->length + 1));
+                Char* new_data = static_cast<Char*>(malloc(sizeof(Char) * ((*line)->length + 1)));
                 memcpy(new_data, (*line)->data, character_index);
                 new_data[character_index] = character;
                 memcpy(new_data + character_index + 1,
@@ -240,7 +243,7 @@ namespace tte { namespace engine {
         if (Line** line = get_line_internal(buffer, line_index); line && *line) {
             if (character_index < (*line)->length) {
                 Char* oldData = (*line)->data;
-                (*line)->data = (Char*)malloc(sizeof(Char) * ((*line)->length - 1));
+                (*line)->data = static_cast<Char*>(malloc(sizeof(Char) * ((*line)->length - 1)));
                 memcpy((*line)->data, oldData, character_index);
                 memcpy((*line)->data + character_index,
                     oldData + character_index + 1,
@@ -262,7 +265,8 @@ namespace tte { namespace engine {
                 const Length actual_number_of_characters =
                     std::min((*line)->length - character_index, number_of_characters);
                 Char* oldData = (*line)->data;
-                (*line)->data = (Char*)malloc(sizeof(Char) * ((*line)->length - actual_number_of_characters));
+                (*line)->data =
+                    static_cast<Char*>(malloc(sizeof(Char) * ((*line)->length - actual_number_of_characters)));
                 memcpy((*line)->data, oldData, character_index);
                 memcpy((*line)->data + character_index,
                     oldData + character_index + actual_number_of_characters,
@@ -300,9 +304,9 @@ namespace tte { namespace engine {
         return 0;
     }
 
-    const char* line_to_c_string(Buffer& buffer, const Length line_index) {
+    char* line_to_c_string(Buffer& buffer, const Length line_index) {
         if (Line** line = get_line_internal(buffer, line_index); line && *line) {
-            char* result = (char*)malloc(sizeof(char) * ((*line)->length + 1));
+            char* result = static_cast<char*>(malloc(sizeof(char) * ((*line)->length + 1)));
             memcpy(result, (*line)->data, (*line)->length);
             result[(*line)->length] = '\0';
             return result;
@@ -311,13 +315,13 @@ namespace tte { namespace engine {
         return nullptr;
     }
 
-    const char* buffer_to_c_string(Buffer& buffer) {
+    char* buffer_to_c_string(Buffer& buffer) {
         Length length = 0;
         for (Line* line = buffer.first_line; line; line = line->next) {
             length += line->length + 1;
         }
 
-        char* result = (char*)malloc(sizeof(char) * (length + 1));
+        char* result = static_cast<char*>(malloc(sizeof(char) * (length + 1)));
         result[length] = '\0';
         Length index = 0;
         for (Line* line = buffer.first_line; line; line = line->next) {

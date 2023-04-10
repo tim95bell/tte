@@ -64,12 +64,15 @@ namespace tte { namespace engine {
         return line;
     }
 
-    static bool insert_characters(Line& line, const Length character_index, const Char* data, const Length data_length) {
+    static bool
+    insert_characters(Line& line, const Length character_index, const Char* data, const Length data_length) {
         if (character_index <= line.length) {
             Char* new_data = (Char*)malloc(sizeof(Char) * (line.length + data_length));
             memcpy(new_data, line.data, character_index);
             memcpy(new_data + character_index, data, data_length);
-            memcpy(new_data + character_index + data_length, line.data + character_index, line.length - character_index);
+            memcpy(new_data + character_index + data_length,
+                line.data + character_index,
+                line.length - character_index);
             free(line.data);
             line.data = new_data;
             line.length = line.length + data_length;
@@ -134,8 +137,7 @@ namespace tte { namespace engine {
     }
 
     bool insert_empty_lines(Buffer& buffer, const Length number_of_lines, const Length line_index) {
-        if (Line** line = get_line_internal(buffer, line_index))
-        {
+        if (Line** line = get_line_internal(buffer, line_index)) {
             for (Length i = 0; i < number_of_lines; ++i) {
                 insert_empty_line_internal(line);
                 TTE_ASSERT(line);
@@ -156,7 +158,11 @@ namespace tte { namespace engine {
         return result;
     }
 
-    bool insert_lines(Buffer& buffer, const Length number_of_lines, const Length line_index, const Char** data_array, const Length* data_length_array) {
+    bool insert_lines(Buffer& buffer,
+        const Length number_of_lines,
+        const Length line_index,
+        const Char** data_array,
+        const Length* data_length_array) {
         if (Line** line = get_line_internal(buffer, line_index)) {
             for (Length i = 0; i < number_of_lines; ++i) {
                 insert_line_internal(line, data_array[i], data_length_array[i]);
@@ -174,7 +180,9 @@ namespace tte { namespace engine {
                 Char* new_data = (Char*)malloc(sizeof(Char) * ((*line)->length + 1));
                 memcpy(new_data, (*line)->data, character_index);
                 new_data[character_index] = character;
-                memcpy(new_data + character_index + 1, (*line)->data + character_index, (*line)->length - character_index);
+                memcpy(new_data + character_index + 1,
+                    (*line)->data + character_index,
+                    (*line)->length - character_index);
                 free((*line)->data);
                 (*line)->data = new_data;
                 (*line)->length = (*line)->length + 1;
@@ -188,7 +196,11 @@ namespace tte { namespace engine {
         return insert_characters(buffer, line_index, character_index, data, strlen(data));
     }
 
-    bool insert_characters(Buffer& buffer, const Length line_index, const Length character_index, const Char* data, const Length data_length) {
+    bool insert_characters(Buffer& buffer,
+        const Length line_index,
+        const Length character_index,
+        const Char* data,
+        const Length data_length) {
         if (data_length == 0) {
             return true;
         }
@@ -230,7 +242,9 @@ namespace tte { namespace engine {
                 Char* oldData = (*line)->data;
                 (*line)->data = (Char*)malloc(sizeof(Char) * ((*line)->length - 1));
                 memcpy((*line)->data, oldData, character_index);
-                memcpy((*line)->data + character_index, oldData + character_index + 1, (*line)->length - character_index - 1);
+                memcpy((*line)->data + character_index,
+                    oldData + character_index + 1,
+                    (*line)->length - character_index - 1);
                 free(oldData);
                 (*line)->length = (*line)->length - 1;
                 return true;
@@ -239,14 +253,20 @@ namespace tte { namespace engine {
         return false;
     }
 
-    bool delete_characters(Buffer& buffer, const Length number_of_characters, const Length line_index, const Length character_index) {
+    bool delete_characters(Buffer& buffer,
+        const Length number_of_characters,
+        const Length line_index,
+        const Length character_index) {
         if (Line** line = get_line_internal(buffer, line_index); line && *line) {
             if (character_index < (*line)->length) {
-                const Length actual_number_of_characters = std::min((*line)->length - character_index, number_of_characters);
+                const Length actual_number_of_characters =
+                    std::min((*line)->length - character_index, number_of_characters);
                 Char* oldData = (*line)->data;
                 (*line)->data = (Char*)malloc(sizeof(Char) * ((*line)->length - actual_number_of_characters));
                 memcpy((*line)->data, oldData, character_index);
-                memcpy((*line)->data + character_index, oldData + character_index + actual_number_of_characters, (*line)->length - character_index - actual_number_of_characters);
+                memcpy((*line)->data + character_index,
+                    oldData + character_index + actual_number_of_characters,
+                    (*line)->length - character_index - actual_number_of_characters);
                 free(oldData);
                 (*line)->length = (*line)->length - actual_number_of_characters;
                 return true;

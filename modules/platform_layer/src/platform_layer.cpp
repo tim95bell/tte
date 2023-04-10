@@ -9,9 +9,7 @@
 
 namespace tte { namespace platform_layer {
     // #region internal
-    static void create_quit_event(Event& e) {
-        e.type = EventType::Quit;
-    }
+    static void create_quit_event(Event& e) { e.type = EventType::Quit; }
 
     static void create_key_down_event(Event& e, KeyCode keyCode, U8 repeat) {
         e.type = EventType::KeyDown;
@@ -49,9 +47,9 @@ namespace tte { namespace platform_layer {
             return false;
         }
 
-		if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1")) {
-			TTE_DBG("Linear texture filtering not enabled");
-		}
+        if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1")) {
+            TTE_DBG("Linear texture filtering not enabled");
+        }
 
         int imgFlags = IMG_INIT_PNG;
         if (!(IMG_Init(imgFlags) & imgFlags)) {
@@ -78,7 +76,12 @@ namespace tte { namespace platform_layer {
 
     Window* create_window(U32 width, U32 height) {
         Window* result = (Window*)malloc(sizeof(Window));
-        result->window = SDL_CreateWindow("TTE", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, static_cast<S32>(width), static_cast<S32>(height), SDL_WINDOW_SHOWN);
+        result->window = SDL_CreateWindow("TTE",
+            SDL_WINDOWPOS_UNDEFINED,
+            SDL_WINDOWPOS_UNDEFINED,
+            static_cast<S32>(width),
+            static_cast<S32>(height),
+            SDL_WINDOW_SHOWN);
         if (!result->window) {
             TTE_DBG("Failed to create SDL window: %s", SDL_GetError());
             free(result);
@@ -127,9 +130,7 @@ namespace tte { namespace platform_layer {
         SDL_RenderClear(window.renderer);
     }
 
-    void show_buffer(Window& window) {
-        SDL_RenderPresent(window.renderer);
-    }
+    void show_buffer(Window& window) { SDL_RenderPresent(window.renderer); }
 
     void render_text(Window& window, Font& font, const char* text, S32 x, S32 y, U8 r, U8 g, U8 b) {
         TTE_ASSERT(text);
@@ -167,7 +168,7 @@ namespace tte { namespace platform_layer {
     }
 
     void close_font(Font& font) {
-	    TTF_CloseFont(font.font);
+        TTF_CloseFont(font.font);
         free(&font);
     }
 
@@ -206,7 +207,8 @@ namespace tte { namespace platform_layer {
     }
 
     Length get_fonts(platform_layer::Font** fonts, const U32 font_size) {
-        const std::filesystem::path fonts_directory_path(std::filesystem::relative(std::filesystem::path("resources/fonts")));
+        const std::filesystem::path fonts_directory_path(
+            std::filesystem::relative(std::filesystem::path("resources/fonts")));
         if (std::filesystem::directory_entry(fonts_directory_path).is_directory()) {
             Length size = 0;
             Length capacity = 5;

@@ -60,7 +60,14 @@ namespace tte { namespace ui {
                     if (!engine::line_empty(buffer, i)) {
                         const char* line = engine::line_to_c_string(buffer, i);
                         TTE_ASSERT(line);
-                        platform_layer::render_text(*window, *font, line, 0, static_cast<S32>(i * font_size), 0xFF, 0x39, 0xA1);
+                        platform_layer::render_text(*window,
+                            *font,
+                            line,
+                            0,
+                            static_cast<S32>(i * font_size),
+                            0xFF,
+                            0x39,
+                            0xA1);
                         free((void*)line);
                     }
                 }
@@ -81,7 +88,6 @@ namespace tte { namespace ui {
                                 if (engine::merge_lines(buffer, cursor.line - 1)) {
                                     cursor.line = cursor.line - 1;
                                     cursor.character = old_line_length;
-
                                 }
                             }
                         } else {
@@ -99,7 +105,10 @@ namespace tte { namespace ui {
                             cursor.character = 0;
                         }
                     } else if (e.key.keycode != platform_layer::KeyCode::Unknown) {
-                        engine::insert_character(buffer, cursor.line, cursor.character, platform_layer::get_key_code_character(e.key.keycode));
+                        engine::insert_character(buffer,
+                            cursor.line,
+                            cursor.character,
+                            platform_layer::get_key_code_character(e.key.keycode));
                         ++cursor.character;
                     }
                 }
@@ -114,6 +123,6 @@ namespace tte { namespace ui {
 }}
 
 int main() {
-    tte::ui::run();
-    return 0;
+tte::ui::run();
+return 0;
 }

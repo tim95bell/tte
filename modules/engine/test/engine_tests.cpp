@@ -49,20 +49,19 @@ TEST(engine, destroyBuffer) {
 // #endregion
 
 // #region bool insert_empty_line(Buffer&, Length line_index)
-static void test_insert_empty_line(std::vector<std::string> lines, tte::Length line_index, std::vector<std::string> expected_lines, bool expected_result) {
+static void test_insert_empty_line(std::vector<std::string> lines,
+    tte::Length line_index,
+    std::vector<std::string> expected_lines,
+    bool expected_result) {
     tte::engine::Buffer& buffer = create_buffer(lines);
 
     ASSERT_EQ(tte::engine::insert_empty_line(buffer, line_index), expected_result);
     assert_buffer_state(buffer, expected_lines);
 }
 
-TEST(engine, insertEmptyLineAtBeginningOfEmptyBuffer) {
-    test_insert_empty_line({}, 0, {empty_string}, true);
-}
+TEST(engine, insertEmptyLineAtBeginningOfEmptyBuffer) { test_insert_empty_line({}, 0, {empty_string}, true); }
 
-TEST(engine, insertEmptyLineAtInvalidIndexOfEmptyBuffer) {
-    test_insert_empty_line({}, 1, {}, false);
-}
+TEST(engine, insertEmptyLineAtInvalidIndexOfEmptyBuffer) { test_insert_empty_line({}, 1, {}, false); }
 
 TEST(engine, insertEmptyLineAtBeginningOfNonEmptyBuffer) {
     test_insert_empty_line({string_1}, 0, {empty_string, string_1}, true);
@@ -82,13 +81,18 @@ TEST(engine, insertEmptyLineAtInvalidIndexOfNonEmptyBuffer) {
 // #endregion
 
 // #region bool insert_line(Buffer&, Length line_index, Char* contents)
-static void test_insert_line(std::vector<std::string> lines, tte::Length line_index, std::string line, std::vector<std::string> expected_lines, bool expected_result) {
+static void test_insert_line(std::vector<std::string> lines,
+    tte::Length line_index,
+    std::string line,
+    std::vector<std::string> expected_lines,
+    bool expected_result) {
     {
         tte::engine::Buffer& buffer = create_buffer(lines);
 
         char* line_without_null_terminator = (char*)malloc(sizeof(char) * line.size());
         memcpy(line_without_null_terminator, line.c_str(), line.size());
-        ASSERT_EQ(tte::engine::insert_line(buffer, line_index, line_without_null_terminator, line.size()), expected_result);
+        ASSERT_EQ(tte::engine::insert_line(buffer, line_index, line_without_null_terminator, line.size()),
+            expected_result);
         assert_buffer_state(buffer, expected_lines);
     }
 
@@ -100,62 +104,48 @@ static void test_insert_line(std::vector<std::string> lines, tte::Length line_in
     }
 }
 
-TEST(engine, insertLineAtBeginningOfEmptyBuffer) {
-    test_insert_line({}, 0, string_1, {string_1}, true);
-}
+TEST(engine, insertLineAtBeginningOfEmptyBuffer) { test_insert_line({}, 0, string_1, {string_1}, true); }
 
-TEST(engine, insertLineAtInvalidIndexOfEmptyBuffer) {
-    test_insert_line({}, 1, string_1, {}, false);
-}
+TEST(engine, insertLineAtInvalidIndexOfEmptyBuffer) { test_insert_line({}, 1, string_1, {}, false); }
 
 TEST(engine, insertLineAtBeginningOfNonEmptyBuffer) {
     test_insert_line({string_1}, 0, string_2, {string_2, string_1}, true);
 }
 
-TEST(engine, insertLineAtEndOfNonEmptyBuffer) {
-    test_insert_line({string_1}, 1, string_2, {string_1, string_2}, true);
-}
+TEST(engine, insertLineAtEndOfNonEmptyBuffer) { test_insert_line({string_1}, 1, string_2, {string_1, string_2}, true); }
 
 TEST(engine, insertLineAtMiddleOfNonEmptyBuffer) {
     test_insert_line({empty_string, string_1}, 1, string_2, {empty_string, string_2, string_1}, true);
 }
 
-TEST(engine, insertLineAtInvalidIndexOfNonEmptyBuffer) {
-    test_insert_line({string_1}, 2, string_2, {string_1}, false);
-}
+TEST(engine, insertLineAtInvalidIndexOfNonEmptyBuffer) { test_insert_line({string_1}, 2, string_2, {string_1}, false); }
 // #endregion
 
 // #region bool insert_empty_lines(Buffer&, Length number_of_lines, Length line_index);
-static void test_insert_empty_lines(std::vector<std::string> lines, tte::Length number_of_lines, tte::Length line_index, std::vector<std::string> expected_lines, bool expected_result) {
+static void test_insert_empty_lines(std::vector<std::string> lines,
+    tte::Length number_of_lines,
+    tte::Length line_index,
+    std::vector<std::string> expected_lines,
+    bool expected_result) {
     tte::engine::Buffer& buffer = create_buffer(lines);
 
     ASSERT_EQ(tte::engine::insert_empty_lines(buffer, number_of_lines, line_index), expected_result);
     assert_buffer_state(buffer, expected_lines);
 }
 
-TEST(engine, insertEmptyLinesZeroAtBeginningOfEmptyBuffer) {
-    test_insert_empty_lines({}, 0, 0, {}, true);
-}
+TEST(engine, insertEmptyLinesZeroAtBeginningOfEmptyBuffer) { test_insert_empty_lines({}, 0, 0, {}, true); }
 
-TEST(engine, insertEmptyLinesOneAtBeginningOfEmptyBuffer) {
-    test_insert_empty_lines({}, 1, 0, {empty_string}, true);
-}
+TEST(engine, insertEmptyLinesOneAtBeginningOfEmptyBuffer) { test_insert_empty_lines({}, 1, 0, {empty_string}, true); }
 
 TEST(engine, insertEmptyLinesManyAtBeginningOfEmptyBuffer) {
     test_insert_empty_lines({}, 3, 0, {empty_string, empty_string, empty_string}, true);
 }
 
-TEST(engine, insertEmptyLinesZeroAtInvalidIndexOfEmptyBuffer) {
-    test_insert_empty_lines({}, 0, 1, {}, true);
-}
+TEST(engine, insertEmptyLinesZeroAtInvalidIndexOfEmptyBuffer) { test_insert_empty_lines({}, 0, 1, {}, true); }
 
-TEST(engine, insertEmptyLinesOneAtInvalidIndexOfEmptyBuffer) {
-    test_insert_empty_lines({}, 1, 1, {}, false);
-}
+TEST(engine, insertEmptyLinesOneAtInvalidIndexOfEmptyBuffer) { test_insert_empty_lines({}, 1, 1, {}, false); }
 
-TEST(engine, insertEmptyLinesManyAtInvalidIndexOfEmptyBuffer) {
-    test_insert_empty_lines({}, 3, 1, {}, false);
-}
+TEST(engine, insertEmptyLinesManyAtInvalidIndexOfEmptyBuffer) { test_insert_empty_lines({}, 3, 1, {}, false); }
 
 TEST(engine, insertEmptyLinesZeroAtBeginningOfNonEmptyBuffer) {
     test_insert_empty_lines({string_1, string_2}, 0, 0, {string_1, string_2}, true);
@@ -166,7 +156,11 @@ TEST(engine, insertEmptyLinesOneAtBeginningOfNonEmptyBuffer) {
 }
 
 TEST(engine, insertEmptyLinesManyAtBeginningOfNonEmptyBuffer) {
-    test_insert_empty_lines({string_1, string_2}, 3, 0, {empty_string, empty_string, empty_string, string_1, string_2}, true);
+    test_insert_empty_lines({string_1, string_2},
+        3,
+        0,
+        {empty_string, empty_string, empty_string, string_1, string_2},
+        true);
 }
 
 TEST(engine, insertEmptyLinesZeroAtMiddleOfNonEmptyBuffer) {
@@ -178,7 +172,11 @@ TEST(engine, insertEmptyLinesOneAtMiddleOfNonEmptyBuffer) {
 }
 
 TEST(engine, insertEmptyLinesManyAtMiddleOfNonEmptyBuffer) {
-    test_insert_empty_lines({string_1, string_2}, 3, 1, {string_1, empty_string, empty_string, empty_string, string_2}, true);
+    test_insert_empty_lines({string_1, string_2},
+        3,
+        1,
+        {string_1, empty_string, empty_string, empty_string, string_2},
+        true);
 }
 
 TEST(engine, insertEmptyLinesZeroAtEndOfNonEmptyBuffer) {
@@ -190,7 +188,11 @@ TEST(engine, insertEmptyLinesOneAtEndOfNonEmptyBuffer) {
 }
 
 TEST(engine, insertEmptyLinesManyAtEndOfNonEmptyBuffer) {
-    test_insert_empty_lines({string_1, string_2}, 3, 2, {string_1, string_2, empty_string, empty_string, empty_string}, true);
+    test_insert_empty_lines({string_1, string_2},
+        3,
+        2,
+        {string_1, string_2, empty_string, empty_string, empty_string},
+        true);
 }
 
 TEST(engine, insertEmptyLinesZeroAtInvalidIndexOfNonEmptyBuffer) {
@@ -206,8 +208,13 @@ TEST(engine, inserEmptyLinestManyAtInvalidIndexOfNonEmptyBuffer) {
 }
 // #endregion
 
-// #region bool insert_lines(Buffer&, const Length number_of_lines, const Length line_index, const Char** data_array, const Length* data_length_array);
-static void test_insert_lines(std::vector<std::string> lines, tte::Length line_index, std::vector<std::string> lines_to_insert, std::vector<std::string> expected_lines, bool expected_result) {
+// #region bool insert_lines(Buffer&, const Length number_of_lines, const Length line_index, const Char** data_array,
+// const Length* data_length_array);
+static void test_insert_lines(std::vector<std::string> lines,
+    tte::Length line_index,
+    std::vector<std::string> lines_to_insert,
+    std::vector<std::string> expected_lines,
+    bool expected_result) {
     tte::engine::Buffer& buffer = create_buffer(lines);
 
     const std::size_t number_of_lines = lines_to_insert.size();
@@ -226,25 +233,17 @@ static void test_insert_lines(std::vector<std::string> lines, tte::Length line_i
     free(c_lines);
 }
 
-TEST(engine, insertLinesZeroAtBeginningOfEmptyBuffer) {
-    test_insert_lines({}, 0, {}, {}, true);
-}
+TEST(engine, insertLinesZeroAtBeginningOfEmptyBuffer) { test_insert_lines({}, 0, {}, {}, true); }
 
-TEST(engine, insertLinesOneAtBeginningOfEmptyBuffer) {
-    test_insert_lines({}, 0, {string_1}, {string_1}, true);
-}
+TEST(engine, insertLinesOneAtBeginningOfEmptyBuffer) { test_insert_lines({}, 0, {string_1}, {string_1}, true); }
 
 TEST(engine, insertLinesManyAtBeginningOfEmptyBuffer) {
     test_insert_lines({}, 0, {string_1, string_2, string_3}, {string_1, string_2, string_3}, true);
 }
 
-TEST(engine, insertLinesZeroAtInvalidIndexOfEmptyBuffer) {
-    test_insert_lines({}, 1, {}, {}, true);
-}
+TEST(engine, insertLinesZeroAtInvalidIndexOfEmptyBuffer) { test_insert_lines({}, 1, {}, {}, true); }
 
-TEST(engine, insertLinesOneAtInvalidIndexOfEmptyBuffer) {
-    test_insert_lines({}, 1, {string_1}, {}, false);
-}
+TEST(engine, insertLinesOneAtInvalidIndexOfEmptyBuffer) { test_insert_lines({}, 1, {string_1}, {}, false); }
 
 TEST(engine, insertLinesManyAtInvalidIndexOfEmptyBuffer) {
     test_insert_lines({}, 1, {string_1, string_2, string_3}, {}, false);
@@ -259,7 +258,11 @@ TEST(engine, insertLinesOneAtBeginningOfNonEmptyBuffer) {
 }
 
 TEST(engine, insertLinesManyAtBeginningOfNonEmptyBuffer) {
-    test_insert_lines({string_1, string_2}, 0, {string_3, string_4, string_5}, {string_3, string_4, string_5, string_1, string_2}, true);
+    test_insert_lines({string_1, string_2},
+        0,
+        {string_3, string_4, string_5},
+        {string_3, string_4, string_5, string_1, string_2},
+        true);
 }
 
 TEST(engine, insertLinesZeroAtMiddleOfNonEmptyBuffer) {
@@ -271,7 +274,11 @@ TEST(engine, insertLinesOneAtMiddleOfNonEmptyBuffer) {
 }
 
 TEST(engine, insertLinesManyAtMiddleOfNonEmptyBuffer) {
-    test_insert_lines({string_1, string_2}, 1, {string_3, string_4, string_5}, {string_1, string_3, string_4, string_5, string_2}, true);
+    test_insert_lines({string_1, string_2},
+        1,
+        {string_3, string_4, string_5},
+        {string_1, string_3, string_4, string_5, string_2},
+        true);
 }
 
 TEST(engine, insertLinesZeroAtEndOfNonEmptyBuffer) {
@@ -283,7 +290,11 @@ TEST(engine, insertLinesOneAtEndOfNonEmptyBuffer) {
 }
 
 TEST(engine, insertLinesManyAtEndOfNonEmptyBuffer) {
-    test_insert_lines({string_1, string_2}, 2, {string_3, string_4, string_5}, {string_1, string_2, string_3, string_4, string_5}, true);
+    test_insert_lines({string_1, string_2},
+        2,
+        {string_3, string_4, string_5},
+        {string_1, string_2, string_3, string_4, string_5},
+        true);
 }
 
 TEST(engine, insertLinesZeroAtInvalidIndexOfNonEmptyBuffer) {
@@ -300,16 +311,19 @@ TEST(engine, insertLinesManyAtInvalidIndexOfNonEmptyBuffer) {
 // #endregion
 
 // #region void insert_character(Buffer&, const Length line_index, const Length character_index, const Char character);
-static void test_insert_character(std::vector<std::string> lines, tte::Length line_index, tte::Length character_index, char character, std::vector<std::string> expected_lines, bool expected_result) {
+static void test_insert_character(std::vector<std::string> lines,
+    tte::Length line_index,
+    tte::Length character_index,
+    char character,
+    std::vector<std::string> expected_lines,
+    bool expected_result) {
     tte::engine::Buffer& buffer = create_buffer(lines);
 
     ASSERT_EQ(tte::engine::insert_character(buffer, line_index, character_index, character), expected_result);
     assert_buffer_state(buffer, expected_lines);
 }
 
-TEST(engine, insertCharacterAtInvalidLineIndexOfEmptyBuffer) {
-    test_insert_character({}, 3, 0, 'a', {}, false);
-}
+TEST(engine, insertCharacterAtInvalidLineIndexOfEmptyBuffer) { test_insert_character({}, 3, 0, 'a', {}, false); }
 
 TEST(engine, insertCharacterAtInvalidLineIndexOfNonEmptyBuffer) {
     test_insert_character({string_1}, 3, 0, 'a', {string_1}, false);
@@ -328,15 +342,30 @@ TEST(engine, insertCharacterAtEndOfNonEmptyBufferAtInvalidCharacterIndexOfEmptyL
 }
 
 TEST(engine, insertCharacterAtBeginningOfNonEmptyBufferAtInvalidCharacterIndexOfNonEmptyLine) {
-    test_insert_character({string_1, string_2, string_3}, 0, strlen(string_1) + 1, 'a', {string_1, string_2, string_3}, false);
+    test_insert_character({string_1, string_2, string_3},
+        0,
+        strlen(string_1) + 1,
+        'a',
+        {string_1, string_2, string_3},
+        false);
 }
 
 TEST(engine, insertCharacterAtMiddleOfNonEmptyBufferAtInvalidCharacterIndexOfNonEmptyLine) {
-    test_insert_character({string_1, string_2, string_3}, 1, strlen(string_2) + 1, 'a', {string_1, string_2, string_3}, false);
+    test_insert_character({string_1, string_2, string_3},
+        1,
+        strlen(string_2) + 1,
+        'a',
+        {string_1, string_2, string_3},
+        false);
 }
 
 TEST(engine, insertCharacterAtEndOfNonEmptyBufferAtInvalidCharacterIndexOfNonEmptyLine) {
-    test_insert_character({string_1, string_2, string_3}, 2, strlen(string_3) + 1, 'a', {string_1, string_2, string_3}, false);
+    test_insert_character({string_1, string_2, string_3},
+        2,
+        strlen(string_3) + 1,
+        'a',
+        {string_1, string_2, string_3},
+        false);
 }
 
 TEST(engine, insertCharacterAtBeginningOfNonEmptyBufferAtBeginningOfEmptyLine) {
@@ -389,7 +418,12 @@ TEST(engine, insertCharacterAtEndOfNonEmptyBufferAtEndOfNonEmptyLine) {
 // #endregion
 
 // #region void insert_characters(Buffer&, const Length line_index, const Length character_index, const Char* data);
-static void test_insert_characters(std::vector<std::string> lines, tte::Length line_index, tte::Length character_index, std::string characters, std::vector<std::string> expected_lines, bool expected_result) {
+static void test_insert_characters(std::vector<std::string> lines,
+    tte::Length line_index,
+    tte::Length character_index,
+    std::string characters,
+    std::vector<std::string> expected_lines,
+    bool expected_result) {
     tte::engine::Buffer& buffer = create_buffer(lines);
 
     ASSERT_EQ(tte::engine::insert_characters(buffer, line_index, character_index, characters.c_str()), expected_result);
@@ -397,13 +431,9 @@ static void test_insert_characters(std::vector<std::string> lines, tte::Length l
     tte::engine::destroy_buffer(buffer);
 }
 
-TEST(engine, insertCharactersZeroAtInvalidLineIndexOfEmptyBuffer) {
-    test_insert_characters({}, 10, 0, "", {}, true);
-}
+TEST(engine, insertCharactersZeroAtInvalidLineIndexOfEmptyBuffer) { test_insert_characters({}, 10, 0, "", {}, true); }
 
-TEST(engine, insertCharactersOneAtInvalidLineIndexOfEmptyBuffer) {
-    test_insert_characters({}, 10, 0, "a", {}, false);
-}
+TEST(engine, insertCharactersOneAtInvalidLineIndexOfEmptyBuffer) { test_insert_characters({}, 10, 0, "a", {}, false); }
 
 TEST(engine, insertCharactersManyAtInvalidLineIndexOfEmptyBuffer) {
     test_insert_characters({}, 10, 0, "abd", {}, false);
@@ -458,39 +488,84 @@ TEST(engine, insertCharactersManyAtEndOfNonEmptyBufferAtInvalidCharacterIndexOfE
 }
 
 TEST(engine, insertCharactersZeroAtBeginningOfNonEmptyBufferAtInvalidCharacterIndexOfNonEmptyLine) {
-    test_insert_characters({string_1, string_2, string_3}, 0, strlen(string_1) + 1, "", {string_1, string_2, string_3}, true);
+    test_insert_characters({string_1, string_2, string_3},
+        0,
+        strlen(string_1) + 1,
+        "",
+        {string_1, string_2, string_3},
+        true);
 }
 
 TEST(engine, insertCharactersOneAtBeginningOfNonEmptyBufferAtInvalidCharacterIndexOfNonEmptyLine) {
-    test_insert_characters({string_1, string_2, string_3}, 0, strlen(string_1) + 1, "a", {string_1, string_2, string_3}, false);
+    test_insert_characters({string_1, string_2, string_3},
+        0,
+        strlen(string_1) + 1,
+        "a",
+        {string_1, string_2, string_3},
+        false);
 }
 
 TEST(engine, insertCharactersManyAtBeginningOfNonEmptyBufferAtInvalidCharacterIndexOfNonEmptyLine) {
-    test_insert_characters({string_1, string_2, string_3}, 0, strlen(string_1) + 1, "abc", {string_1, string_2, string_3}, false);
+    test_insert_characters({string_1, string_2, string_3},
+        0,
+        strlen(string_1) + 1,
+        "abc",
+        {string_1, string_2, string_3},
+        false);
 }
 
 TEST(engine, insertCharactersZeroAtMiddleOfNonEmptyBufferAtInvalidCharacterIndexOfNonEmptyLine) {
-    test_insert_characters({string_1, string_2, string_3}, 1, strlen(string_2) + 1, "", {string_1, string_2, string_3}, true);
+    test_insert_characters({string_1, string_2, string_3},
+        1,
+        strlen(string_2) + 1,
+        "",
+        {string_1, string_2, string_3},
+        true);
 }
 
 TEST(engine, insertCharactersOneAtMiddleOfNonEmptyBufferAtInvalidCharacterIndexOfNonEmptyLine) {
-    test_insert_characters({string_1, string_2, string_3}, 1, strlen(string_2) + 1, "a", {string_1, string_2, string_3}, false);
+    test_insert_characters({string_1, string_2, string_3},
+        1,
+        strlen(string_2) + 1,
+        "a",
+        {string_1, string_2, string_3},
+        false);
 }
 
 TEST(engine, insertCharactersManyAtMiddleOfNonEmptyBufferAtInvalidCharacterIndexOfNonEmptyLine) {
-    test_insert_characters({string_1, string_2, string_3}, 1, strlen(string_2) + 1, "abc", {string_1, string_2, string_3}, false);
+    test_insert_characters({string_1, string_2, string_3},
+        1,
+        strlen(string_2) + 1,
+        "abc",
+        {string_1, string_2, string_3},
+        false);
 }
 
 TEST(engine, insertCharactersZeroAtEndOfNonEmptyBufferAtInvalidCharacterIndexOfNonEmptyLine) {
-    test_insert_characters({string_1, string_2, string_3}, 2, strlen(string_3) + 1, "", {string_1, string_2, string_3}, true);
+    test_insert_characters({string_1, string_2, string_3},
+        2,
+        strlen(string_3) + 1,
+        "",
+        {string_1, string_2, string_3},
+        true);
 }
 
 TEST(engine, insertCharactersOneAtEndOfNonEmptyBufferAtInvalidCharacterIndexOfNonEmptyLine) {
-    test_insert_characters({string_1, string_2, string_3}, 2, strlen(string_3) + 1, "a", {string_1, string_2, string_3}, false);
+    test_insert_characters({string_1, string_2, string_3},
+        2,
+        strlen(string_3) + 1,
+        "a",
+        {string_1, string_2, string_3},
+        false);
 }
 
 TEST(engine, insertCharactersManyAtEndOfNonEmptyBufferAtInvalidCharacterIndexOfNonEmptyLine) {
-    test_insert_characters({string_1, string_2, string_3}, 2, strlen(string_3) + 1, "abc", {string_1, string_2, string_3}, false);
+    test_insert_characters({string_1, string_2, string_3},
+        2,
+        strlen(string_3) + 1,
+        "abc",
+        {string_1, string_2, string_3},
+        false);
 }
 
 TEST(engine, insertCharactersZeroAtBeginningOfNonEmptyBufferAtBeginningOfEmptyLine) {
@@ -510,11 +585,21 @@ TEST(engine, insertCharactersZeroAtBeginningOfNonEmptyBufferAtBeginningOfNonEmpt
 }
 
 TEST(engine, insertCharactersOneAtBeginningOfNonEmptyBufferAtBeginningOfNonEmptyLine) {
-    test_insert_characters({string_1, string_2, string_3}, 0, 0, "a", {"a" + std::string(string_1), string_2, string_3}, true);
+    test_insert_characters({string_1, string_2, string_3},
+        0,
+        0,
+        "a",
+        {"a" + std::string(string_1), string_2, string_3},
+        true);
 }
 
 TEST(engine, insertCharactersManyAtBeginningOfNonEmptyBufferAtBeginningOfNonEmptyLine) {
-    test_insert_characters({string_1, string_2, string_3}, 0, 0, "abc", {"abc" + std::string(string_1), string_2, string_3}, true);
+    test_insert_characters({string_1, string_2, string_3},
+        0,
+        0,
+        "abc",
+        {"abc" + std::string(string_1), string_2, string_3},
+        true);
 }
 
 TEST(engine, insertCharactersZeroAtBeginningOfNonEmptyBufferAtMiddleOfNonEmptyLine) {
@@ -558,11 +643,21 @@ TEST(engine, insertCharactersZeroAtMiddleOfNonEmptyBufferAtBeginningOfNonEmptyLi
 }
 
 TEST(engine, insertCharactersOneAtMiddleOfNonEmptyBufferAtBeginningOfNonEmptyLine) {
-    test_insert_characters({string_1, string_2, string_3}, 1, 0, "a", {string_1, "a" + std::string(string_2), string_3}, true);
+    test_insert_characters({string_1, string_2, string_3},
+        1,
+        0,
+        "a",
+        {string_1, "a" + std::string(string_2), string_3},
+        true);
 }
 
 TEST(engine, insertCharactersManyAtMiddleOfNonEmptyBufferAtBeginningOfNonEmptyLine) {
-    test_insert_characters({string_1, string_2, string_3}, 1, 0, "abc", {string_1, "abc" + std::string(string_2), string_3}, true);
+    test_insert_characters({string_1, string_2, string_3},
+        1,
+        0,
+        "abc",
+        {string_1, "abc" + std::string(string_2), string_3},
+        true);
 }
 
 TEST(engine, insertCharactersZeroAtMiddleOfNonEmptyBufferAtMiddleOfNonEmptyLine) {
@@ -606,11 +701,21 @@ TEST(engine, insertCharactersZeroAtEndOfNonEmptyBufferAtBeginningOfNonEmptyLine)
 }
 
 TEST(engine, insertCharactersOneAtEndOfNonEmptyBufferAtBeginningOfNonEmptyLine) {
-    test_insert_characters({string_1, string_2, string_3}, 2, 0, "a", {string_1, string_2, "a" + std::string(string_3)}, true);
+    test_insert_characters({string_1, string_2, string_3},
+        2,
+        0,
+        "a",
+        {string_1, string_2, "a" + std::string(string_3)},
+        true);
 }
 
 TEST(engine, insertCharactersManyAtEndOfNonEmptyBufferAtBeginningOfNonEmptyLine) {
-    test_insert_characters({string_1, string_2, string_3}, 2, 0, "abc", {string_1, string_2, "abc" + std::string(string_3)}, true);
+    test_insert_characters({string_1, string_2, string_3},
+        2,
+        0,
+        "abc",
+        {string_1, string_2, "abc" + std::string(string_3)},
+        true);
 }
 
 TEST(engine, insertCharactersZeroAtEndOfNonEmptyBufferAtMiddleOfNonEmptyLine) {
@@ -639,24 +744,23 @@ TEST(engine, insertCharactersManyAtEndOfNonEmptyBufferAtEndOfNonEmptyLine) {
 // #endregion
 
 // #region void delete_line(Buffer&, const Length line_index);
-static void test_delete_line(std::vector<std::string> lines, tte::Length line_index, std::vector<std::string> expected_lines, bool expected_result) {
+static void test_delete_line(std::vector<std::string> lines,
+    tte::Length line_index,
+    std::vector<std::string> expected_lines,
+    bool expected_result) {
     tte::engine::Buffer& buffer = create_buffer(lines);
 
     ASSERT_EQ(tte::engine::delete_line(buffer, line_index), expected_result);
     assert_buffer_state(buffer, expected_lines);
 }
 
-TEST(engine, deleteLineAtInvalidLineIndexOfEmptyBuffer) {
-    test_delete_line({}, 0, {}, false);
-}
+TEST(engine, deleteLineAtInvalidLineIndexOfEmptyBuffer) { test_delete_line({}, 0, {}, false); }
 
 TEST(engine, deleteLineAtInvalidLineIndexOfNonEmptyBuffer) {
     test_delete_line({string_1, string_2, string_3}, 5, {string_1, string_2, string_3}, false);
 }
 
-TEST(engine, deleteLineAtBeginningOfBufferWithOneLine) {
-    test_delete_line({string_1}, 0, {}, true);
-}
+TEST(engine, deleteLineAtBeginningOfBufferWithOneLine) { test_delete_line({string_1}, 0, {}, true); }
 
 TEST(engine, deleteLineAtBeginningOfBufferWithManyLines) {
     test_delete_line({string_1, string_2, string_3}, 0, {string_2, string_3}, true);
@@ -672,24 +776,22 @@ TEST(engine, deleteLineAtEndOfBufferWithManyLines) {
 // #endregion
 
 // #region void delete_lines(Buffer&, const Length number_of_lines, const Length line_index);
-static void test_delete_lines(std::vector<std::string> lines, tte::Length number_of_lines, tte::Length index, std::vector<std::string> expected_lines, bool expected_result) {
+static void test_delete_lines(std::vector<std::string> lines,
+    tte::Length number_of_lines,
+    tte::Length index,
+    std::vector<std::string> expected_lines,
+    bool expected_result) {
     tte::engine::Buffer& buffer = create_buffer(lines);
 
     ASSERT_EQ(tte::engine::delete_lines(buffer, number_of_lines, index), expected_result);
     assert_buffer_state(buffer, expected_lines);
 }
 
-TEST(engine, deleteLinesZeroAtInvalidIndexOfEmptyBuffer) {
-    test_delete_lines({}, 0, 0, {}, true);
-}
+TEST(engine, deleteLinesZeroAtInvalidIndexOfEmptyBuffer) { test_delete_lines({}, 0, 0, {}, true); }
 
-TEST(engine, deleteLinesOneAtInvalidIndexOfEmptyBuffer) {
-    test_delete_lines({}, 1, 0, {}, false);
-}
+TEST(engine, deleteLinesOneAtInvalidIndexOfEmptyBuffer) { test_delete_lines({}, 1, 0, {}, false); }
 
-TEST(engine, deleteLinesManyAtInvalidIndexOfEmptyBuffer) {
-    test_delete_lines({}, 3, 0, {}, false);
-}
+TEST(engine, deleteLinesManyAtInvalidIndexOfEmptyBuffer) { test_delete_lines({}, 3, 0, {}, false); }
 
 TEST(engine, deleteLinesZeroAtInvalidIndexOfNonEmptyBuffer) {
     test_delete_lines({string_1, string_2}, 0, 2, {string_1, string_2}, true);
@@ -703,16 +805,15 @@ TEST(engine, deleteLinesManyAtInvalidIndexOfNonEmptyBuffer) {
     test_delete_lines({string_1, string_2}, 3, 2, {string_1, string_2}, false);
 }
 
-TEST(engine, deleteLinesZeroAtBeginningOfBufferWithOneLine) {
-    test_delete_lines({string_1}, 0, 0, {string_1}, true);
-}
+TEST(engine, deleteLinesZeroAtBeginningOfBufferWithOneLine) { test_delete_lines({string_1}, 0, 0, {string_1}, true); }
 
 TEST(engine, deleteLinesOneAtBeginningOfBufferWithOneLineWhereDeletionFitsExactly) {
     test_delete_lines({string_1}, 1, 0, {}, true);
 }
 
 TEST(engine, deleteLinesManyAtBeginningOfBufferWithOneLineWhereDeletionGoesOffTheEnd) {
-    // TODO(TB): when the deletion goes past the end, should it fail and not change the buffer, or succeed and delete as much as possible?
+    // TODO(TB): when the deletion goes past the end, should it fail and not change the buffer, or succeed and delete as
+    // much as possible?
     test_delete_lines({string_1}, 3, 0, {}, true);
 }
 
@@ -725,7 +826,8 @@ TEST(engine, deleteLinesOneAtBeginningOfBufferWithManyLinesWhereDeletionFits) {
 }
 
 TEST(engine, deleteLinesManyAtBeginningOfBufferWithManyLinesWhereDeletionGoesOffTheEnd) {
-    // TODO(TB): when the deletion goes past the end, should it fail and not change the buffer, or succeed and delete as much as possible?
+    // TODO(TB): when the deletion goes past the end, should it fail and not change the buffer, or succeed and delete as
+    // much as possible?
     test_delete_lines({string_1, string_2}, 3, 0, {}, true);
 }
 
@@ -746,7 +848,8 @@ TEST(engine, deleteLinesOneAtMiddleOfBufferWithManyLinesWhereDeletionFits) {
 }
 
 TEST(engine, deleteLinesManyAtMiddleOfBufferWithManyLinesWhereDeletionGoesOffTheEnd) {
-    // TODO(TB): when the deletion goes past the end, should it fail and not change the buffer, or succeed and delete as much as possible?
+    // TODO(TB): when the deletion goes past the end, should it fail and not change the buffer, or succeed and delete as
+    // much as possible?
     test_delete_lines({string_1, string_2, string_3}, 3, 1, {string_1}, true);
 }
 
@@ -767,21 +870,24 @@ TEST(engine, deleteLinesOneAtEndOfBufferWithManyLinesWhereDeletionFitsExactly) {
 }
 
 TEST(engine, deleteLinesManyAtEndOfBufferWithManyLinesWhereDeletionGoesOffTheEnd) {
-    // TODO(TB): when the deletion goes past the end, should it fail and not change the buffer, or succeed and delete as much as possible?
+    // TODO(TB): when the deletion goes past the end, should it fail and not change the buffer, or succeed and delete as
+    // much as possible?
     test_delete_lines({string_1, string_2, string_3}, 3, 2, {string_1, string_2}, true);
 }
 // #endregion
 
 // #region void delete_character(Buffer&, const Length line_index, const Length character_index);
-static void test_delete_character(std::vector<std::string> lines, tte::Length line_index, tte::Length character_index, std::vector<std::string> expected_lines, bool expected_result) {
+static void test_delete_character(std::vector<std::string> lines,
+    tte::Length line_index,
+    tte::Length character_index,
+    std::vector<std::string> expected_lines,
+    bool expected_result) {
     tte::engine::Buffer& buffer = create_buffer(lines);
     ASSERT_EQ(tte::engine::delete_character(buffer, line_index, character_index), expected_result);
     assert_buffer_state(buffer, expected_lines);
 }
 
-TEST(engine, deleteCharacterAtInvalidLineIndexOfEmptyBuffer) {
-    test_delete_character({}, 0, 0, {}, false);
-}
+TEST(engine, deleteCharacterAtInvalidLineIndexOfEmptyBuffer) { test_delete_character({}, 0, 0, {}, false); }
 
 TEST(engine, deleteCharacterAtInvalidLineIndexOfNonEmptyBuffer) {
     test_delete_character({string_1}, 1, 0, {string_1}, false);
@@ -812,16 +918,21 @@ TEST(engine, deleteCharacterAtEndOfLineWithManyCharacters) {
 }
 // #endregion
 
-// #region void delete_characters(Buffer&, const Length number_of_characters, const Length line_index, const Length character_index);
-static void test_delete_characters(std::vector<std::string> lines, tte::Length number_of_characters, tte::Length line_index, tte::Length character_index, std::vector<std::string> expected_lines, bool expected_result) {
+// #region void delete_characters(Buffer&, const Length number_of_characters, const Length line_index, const Length
+// character_index);
+static void test_delete_characters(std::vector<std::string> lines,
+    tte::Length number_of_characters,
+    tte::Length line_index,
+    tte::Length character_index,
+    std::vector<std::string> expected_lines,
+    bool expected_result) {
     tte::engine::Buffer& buffer = create_buffer(lines);
-    ASSERT_EQ(tte::engine::delete_characters(buffer, number_of_characters, line_index, character_index), expected_result);
+    ASSERT_EQ(tte::engine::delete_characters(buffer, number_of_characters, line_index, character_index),
+        expected_result);
     assert_buffer_state(buffer, expected_lines);
 }
 
-TEST(engine, deleteCharactersZeroAtInvalidLineIndexOfEmptyBuffer) {
-    test_delete_characters({}, 0, 0, 0, {}, true);
-}
+TEST(engine, deleteCharactersZeroAtInvalidLineIndexOfEmptyBuffer) { test_delete_characters({}, 0, 0, 0, {}, true); }
 
 TEST(engine, deleteCharactersZeroAtInvalidLineIndexOfNonEmptyBuffer) {
     test_delete_characters({string_1}, 0, 1, 0, {string_1}, true);
@@ -832,7 +943,12 @@ TEST(engine, deleteCharactersZeroAtInvalidCharacterIndexOfEmptyLine) {
 }
 
 TEST(engine, deleteCharactersZeroAtInvalidCharacterIndexOfNonEmptyLine) {
-    test_delete_characters({string_1, string_2, string_3}, 0, 1, strlen(string_2), {string_1, string_2, string_3}, true);
+    test_delete_characters({string_1, string_2, string_3},
+        0,
+        1,
+        strlen(string_2),
+        {string_1, string_2, string_3},
+        true);
 }
 
 TEST(engine, deleteCharactersZeroAtBeginningOfLineWithOneCharacter) {
@@ -851,9 +967,7 @@ TEST(engine, deleteCharactersZeroAtEndOfLineWithManyCharacters) {
     test_delete_characters({string_1, "abc", string_3}, 0, 1, 2, {string_1, "abc", string_3}, true);
 }
 
-TEST(engine, deleteCharactersOneAtInvalidLineIndexOfEmptyBuffer) {
-    test_delete_characters({}, 1, 0, 0, {}, false);
-}
+TEST(engine, deleteCharactersOneAtInvalidLineIndexOfEmptyBuffer) { test_delete_characters({}, 1, 0, 0, {}, false); }
 
 TEST(engine, deleteCharactersOneAtInvalidLineIndexOfNonEmptyBuffer) {
     test_delete_characters({string_1}, 1, 1, 0, {string_1}, false);
@@ -864,7 +978,12 @@ TEST(engine, deleteCharactersOneAtInvalidCharacterIndexOfEmptyLine) {
 }
 
 TEST(engine, deleteCharactersOneAtInvalidCharacterIndexOfNonEmptyLine) {
-    test_delete_characters({string_1, string_2, string_3}, 1, 1, strlen(string_2), {string_1, string_2, string_3}, false);
+    test_delete_characters({string_1, string_2, string_3},
+        1,
+        1,
+        strlen(string_2),
+        {string_1, string_2, string_3},
+        false);
 }
 
 TEST(engine, deleteCharactersOneAtBeginningOfLineWithOneCharacter) {
@@ -883,9 +1002,7 @@ TEST(engine, deleteCharactersOneAtEndOfLineWithManyCharacters) {
     test_delete_characters({string_1, "abc", string_3}, 1, 1, 2, {string_1, "ab", string_3}, true);
 }
 
-TEST(engine, deleteCharactersManyAtInvalidLineIndexOfEmptyBuffer) {
-    test_delete_characters({}, 3, 0, 0, {}, false);
-}
+TEST(engine, deleteCharactersManyAtInvalidLineIndexOfEmptyBuffer) { test_delete_characters({}, 3, 0, 0, {}, false); }
 
 TEST(engine, deleteCharactersManyAtInvalidLineIndexOfNonEmptyBuffer) {
     test_delete_characters({string_1}, 3, 1, 0, {string_1}, false);
@@ -896,7 +1013,12 @@ TEST(engine, deleteCharactersManyAtInvalidCharacterIndexOfEmptyLine) {
 }
 
 TEST(engine, deleteCharactersManyAtInvalidCharacterIndexOfNonEmptyLine) {
-    test_delete_characters({string_1, string_2, string_3}, 3, 1, strlen(string_2), {string_1, string_2, string_3}, false);
+    test_delete_characters({string_1, string_2, string_3},
+        3,
+        1,
+        strlen(string_2),
+        {string_1, string_2, string_3},
+        false);
 }
 
 TEST(engine, deleteCharactersManyAtBeginningOfLineWithOneCharacterWhereDeletionDoesNotFit) {
@@ -936,9 +1058,7 @@ static void test_line_to_c_string(std::vector<std::string> lines, tte::Length in
     free((void*)result);
 }
 
-TEST(engine, lineToCStringAtInvalidIndexOfEmptyBuffer) {
-    test_line_to_c_string({}, 0, nullptr);
-}
+TEST(engine, lineToCStringAtInvalidIndexOfEmptyBuffer) { test_line_to_c_string({}, 0, nullptr); }
 
 TEST(engine, lineToCStringAtInvalidIndexOfNonEmptyBuffer) {
     test_line_to_c_string({string_1, string_2, string_3}, 3, nullptr);
@@ -948,9 +1068,7 @@ TEST(engine, lineToCStringAtBeginningOfBufferWithOneLineWithZeroCharacters) {
     test_line_to_c_string({empty_string}, 0, "");
 }
 
-TEST(engine, lineToCStringAtBeginningOfBufferWithOneLineWithOneCharacter) {
-    test_line_to_c_string({"a"}, 0, "a");
-}
+TEST(engine, lineToCStringAtBeginningOfBufferWithOneLineWithOneCharacter) { test_line_to_c_string({"a"}, 0, "a"); }
 
 TEST(engine, lineToCStringAtBeginningOfBufferWithOneLineWithManyCharacters) {
     test_line_to_c_string({"abc"}, 0, "abc");
@@ -1002,8 +1120,7 @@ TEST(engine, bufferToCStringWithEmptyBuffer) {
 }
 
 TEST(engine, bufferToCStringWithNonEmptyBuffer) {
-    std::vector<std::string> lines{
-        empty_string,
+    std::vector<std::string> lines{empty_string,
         string_1,
         string_3,
         empty_string,
@@ -1014,8 +1131,7 @@ TEST(engine, bufferToCStringWithNonEmptyBuffer) {
         string_4,
         empty_string,
         string_5,
-        empty_string
-    };
+        empty_string};
     std::string expected_result;
     for (std::string& line : lines) {
         expected_result += line + "\n";

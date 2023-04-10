@@ -13,15 +13,26 @@ namespace tte { namespace engine {
     extern bool insert_line(Buffer&, const Length line_index, const Char* data);
     extern bool insert_line(Buffer&, const Length line_index, const Char* data, const Length data_length);
     extern bool insert_empty_lines(Buffer&, const Length number_of_lines, const Length line_index);
-    extern bool insert_lines(Buffer&, const Length number_of_lines, const Length line_index, const Char** data_array, const Length* data_length_array);
+    extern bool insert_lines(Buffer&,
+        const Length number_of_lines,
+        const Length line_index,
+        const Char** data_array,
+        const Length* data_length_array);
     extern bool insert_lines(Buffer&, const Length number_of_lines, const Length line_index, const Char** data_array);
     extern bool insert_character(Buffer&, const Length line_index, const Length character_index, const Char character);
-    extern bool insert_characters(Buffer&, const Length line_index, const Length character_index, const Char* data, const Length data_length);
+    extern bool insert_characters(Buffer&,
+        const Length line_index,
+        const Length character_index,
+        const Char* data,
+        const Length data_length);
     extern bool insert_characters(Buffer&, const Length line_index, const Length character_index, const Char* data);
     extern bool delete_line(Buffer&, const Length line_index);
     extern bool delete_lines(Buffer&, const Length number_of_lines, const Length line_index);
     extern bool delete_character(Buffer&, const Length line_index, const Length character_index);
-    extern bool delete_characters(Buffer&, const Length number_of_characters, const Length line_index, const Length character_index);
+    extern bool delete_characters(Buffer&,
+        const Length number_of_characters,
+        const Length line_index,
+        const Length character_index);
     extern bool merge_lines(Buffer&, const Length line_index);
     extern Length get_buffer_length(Buffer&);
     extern Length get_line_length(Buffer&, const Length line_index);

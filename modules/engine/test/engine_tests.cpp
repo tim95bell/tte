@@ -10,10 +10,10 @@ static const char* string_3 = "string_3_something_different_again";
 static const char* string_4 = "string_4_something_different_again_and_again";
 static const char* string_5 = "string_5_something_different_again_and_again_and_again";
 
-static tte::engine::Buffer& create_buffer(std::vector<std::string> lines) {
+[[nodiscard]] static tte::engine::Buffer& create_buffer(std::vector<std::string> lines) {
     tte::engine::Buffer& buffer = tte::engine::create_buffer();
     for (tte::Length i = 0; i < lines.size(); ++i) {
-        tte::engine::insert_line(buffer, i, lines[i].c_str());
+        [[maybe_unused]] const bool result = tte::engine::insert_line(buffer, i, lines[i].c_str());
     }
     return buffer;
 }

@@ -17,7 +17,7 @@ namespace tte { namespace platform_layer {
         e.key.repeat = repeat;
     }
 
-    static KeyCode sdl_key_to_tte_key(SDL_Keycode code) {
+    [[nodiscard]] static KeyCode sdl_key_to_tte_key(SDL_Keycode code) {
         if (code >= SDLK_a && code <= SDLK_z) {
             return static_cast<KeyCode>(static_cast<S32>(KeyCode::A) + (code - SDLK_a));
         } else if (code == SDLK_BACKSPACE) {

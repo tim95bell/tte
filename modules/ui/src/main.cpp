@@ -13,7 +13,11 @@ namespace tte { namespace ui {
     void run() {
         engine::Buffer& buffer = engine::create_buffer();
         Cursor cursor{};
-        engine::insert_empty_line(buffer, 0);
+
+        if (!engine::insert_empty_line(buffer, 0)) {
+            engine::destroy_buffer(buffer);
+            return;
+        }
 
         platform_layer::Window* window = platform_layer::create_window(640, 480);
         if (!window) {
@@ -91,12 +95,18 @@ namespace tte { namespace ui {
                                 }
                             }
                         } else {
-                            engine::delete_character(buffer, cursor.line, cursor.character - 1);
-                            --cursor.character;
+                            if (engine::delete_character(buffer, cursor.line, cursor.character - 1)) {
+                                --cursor.character;
+                            } else {
+                                TTE_ASSERT(false);
+                            }
                         }
                     } else if (e.key.keycode == platform_layer::KeyCode::Space) {
-                        engine::insert_character(buffer, cursor.line, cursor.character, ' ');
-                        ++cursor.character;
+                        if (engine::insert_character(buffer, cursor.line, cursor.character, ' ')) {
+                            ++cursor.character;
+                        } else {
+                            TTE_ASSERT(false);
+                        }
                     } else if (e.key.keycode == platform_layer::KeyCode::Return) {
                         const bool result = engine::insert_empty_line(buffer, cursor.line + 1);
                         TTE_ASSERT(result);
@@ -105,11 +115,14 @@ namespace tte { namespace ui {
                             cursor.character = 0;
                         }
                     } else if (e.key.keycode != platform_layer::KeyCode::Unknown) {
-                        engine::insert_character(buffer,
-                            cursor.line,
-                            cursor.character,
-                            platform_layer::get_key_code_character(e.key.keycode));
-                        ++cursor.character;
+                        if (engine::insert_character(buffer,
+                                cursor.line,
+                                cursor.character,
+                                platform_layer::get_key_code_character(e.key.keycode))) {
+                            ++cursor.character;
+                        } else {
+                            TTE_ASSERT(false);
+                        }
                     }
                 }
             }

@@ -38,7 +38,7 @@ namespace tte { namespace engine {
         (*line)->length = data_length;
     }
 
-    static inline Line** get_line_internal(Buffer& buffer, const Length line_index) {
+    [[nodiscard]] static inline Line** get_line_internal(Buffer& buffer, const Length line_index) {
         Length i = 0;
         Line** line = &buffer.first_line;
         while (line) {
@@ -55,8 +55,8 @@ namespace tte { namespace engine {
         return nullptr;
     }
 
-    [[maybe_unused]]
-    static inline Line** get_closest_line_internal(Buffer& buffer, const Length line_index) {
+    [[maybe_unused, nodiscard]] static inline Line** get_closest_line_internal(Buffer& buffer,
+        const Length line_index) {
         Line** line = &buffer.first_line;
         for (Length i = 0; i < line_index && line && *line; ++i) {
             line = &(*line)->next;
@@ -64,7 +64,7 @@ namespace tte { namespace engine {
         return line;
     }
 
-    static bool
+    [[nodiscard]] static bool
     insert_characters(Line& line, const Length character_index, const Char* data, const Length data_length) {
         if (character_index <= line.length) {
             Char* new_data = static_cast<Char*>(malloc(sizeof(Char) * (line.length + data_length)));

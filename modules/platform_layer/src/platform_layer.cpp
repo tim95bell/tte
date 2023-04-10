@@ -30,6 +30,7 @@ namespace tte { namespace platform_layer {
             return KeyCode::Unknown;
         }
     }
+
     // #endregion
 
     struct Window {

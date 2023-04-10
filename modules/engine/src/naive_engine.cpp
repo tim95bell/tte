@@ -102,6 +102,7 @@ namespace tte { namespace engine {
         *line = (*line)->next;
         destroy_line(old_line);
     }
+
     // #endregion
 
     Buffer& create_buffer() {

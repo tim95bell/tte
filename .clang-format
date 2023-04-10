@@ -37,7 +37,8 @@ DerivePointerAlignment: false
 DisableFormat: false
 FixNamespaceComments: false
 IncludeBlocks: Merge
-IndentCaseLabels: false
+IndentCaseBlocks: false
+IndentCaseLabels: true
 IndentWidth: 4
 IndentWrappedFunctionNames: false
 KeepEmptyLinesAtTheStartOfBlocks: false
@@ -64,3 +65,8 @@ Standard: c++17
 TabWidth: 4
 UseTab: Never
 InsertBraces: true
+EmptyLineBeforeAccessModifier: Always
+InsertNewlineAtEOF: true
+RemoveSemicolon: true
+SeparateDefinitionBlocks: Always
+Standard: c++17

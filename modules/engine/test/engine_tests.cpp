@@ -39,6 +39,7 @@ TEST(engine, createBufferTwiceGivesDifferentBuffers) {
     tte::engine::Buffer& buffer2 = tte::engine::create_buffer();
     ASSERT_NE(&buffer1, &buffer2);
 }
+
 // #endregion
 
 // #region void destroy_buffer(Buffer&)
@@ -46,6 +47,7 @@ TEST(engine, destroyBuffer) {
     tte::engine::Buffer& buffer = tte::engine::create_buffer();
     tte::engine::destroy_buffer(buffer);
 }
+
 // #endregion
 
 // #region bool insert_empty_line(Buffer&, Length line_index)
@@ -78,6 +80,7 @@ TEST(engine, insertEmptyLineAtMiddleOfNonEmptyBuffer) {
 TEST(engine, insertEmptyLineAtInvalidIndexOfNonEmptyBuffer) {
     test_insert_empty_line({string_1}, 2, {string_1}, false);
 }
+
 // #endregion
 
 // #region bool insert_line(Buffer&, Length line_index, Char* contents)
@@ -119,6 +122,7 @@ TEST(engine, insertLineAtMiddleOfNonEmptyBuffer) {
 }
 
 TEST(engine, insertLineAtInvalidIndexOfNonEmptyBuffer) { test_insert_line({string_1}, 2, string_2, {string_1}, false); }
+
 // #endregion
 
 // #region bool insert_empty_lines(Buffer&, Length number_of_lines, Length line_index);
@@ -206,6 +210,7 @@ TEST(engine, insertEmptyLinesOneAtInvalidIndexOfNonEmptyBuffer) {
 TEST(engine, inserEmptyLinestManyAtInvalidIndexOfNonEmptyBuffer) {
     test_insert_empty_lines({string_1, string_2}, 3, 3, {string_1, string_2}, false);
 }
+
 // #endregion
 
 // #region bool insert_lines(Buffer&, const Length number_of_lines, const Length line_index, const Char** data_array,
@@ -309,6 +314,7 @@ TEST(engine, insertLinesOneAtInvalidIndexOfNonEmptyBuffer) {
 TEST(engine, insertLinesManyAtInvalidIndexOfNonEmptyBuffer) {
     test_insert_lines({string_1, string_2}, 3, {string_3, string_4, string_5}, {string_1, string_2}, false);
 }
+
 // #endregion
 
 // #region void insert_character(Buffer&, const Length line_index, const Length character_index, const Char character);
@@ -416,6 +422,7 @@ TEST(engine, insertCharacterAtEndOfNonEmptyBufferAtMiddleOfNonEmptyLine) {
 TEST(engine, insertCharacterAtEndOfNonEmptyBufferAtEndOfNonEmptyLine) {
     test_insert_character({string_1, string_2, "hello"}, 2, strlen("hello"), 'a', {string_1, string_2, "helloa"}, true);
 }
+
 // #endregion
 
 // #region void insert_characters(Buffer&, const Length line_index, const Length character_index, const Char* data);
@@ -742,6 +749,7 @@ TEST(engine, insertCharactersOneAtEndOfNonEmptyBufferAtEndOfNonEmptyLine) {
 TEST(engine, insertCharactersManyAtEndOfNonEmptyBufferAtEndOfNonEmptyLine) {
     test_insert_characters({string_1, string_2, "abc"}, 2, 3, "123", {string_1, string_2, "abc123"}, true);
 }
+
 // #endregion
 
 // #region void delete_line(Buffer&, const Length line_index);
@@ -774,6 +782,7 @@ TEST(engine, deleteLineAtMiddleOfBufferWithManyLines) {
 TEST(engine, deleteLineAtEndOfBufferWithManyLines) {
     test_delete_line({string_1, string_2, string_3}, 2, {string_1, string_2}, true);
 }
+
 // #endregion
 
 // #region void delete_lines(Buffer&, const Length number_of_lines, const Length line_index);
@@ -875,6 +884,7 @@ TEST(engine, deleteLinesManyAtEndOfBufferWithManyLinesWhereDeletionGoesOffTheEnd
     // much as possible?
     test_delete_lines({string_1, string_2, string_3}, 3, 2, {string_1, string_2}, true);
 }
+
 // #endregion
 
 // #region void delete_character(Buffer&, const Length line_index, const Length character_index);
@@ -917,6 +927,7 @@ TEST(engine, deleteCharacterAtMiddleOfLineWithManyCharacters) {
 TEST(engine, deleteCharacterAtEndOfLineWithManyCharacters) {
     test_delete_character({string_1, "abc", string_3}, 1, 2, {string_1, "ab", string_3}, true);
 }
+
 // #endregion
 
 // #region void delete_characters(Buffer&, const Length number_of_characters, const Length line_index, const Length
@@ -1049,6 +1060,7 @@ TEST(engine, deleteCharactersManyAtMiddleOfLineWithManyCharactersWhereDeletionFi
 TEST(engine, deleteCharactersManyAtEndOfLineWithManyCharactersWhereDeletionDoesNotFit) {
     test_delete_characters({string_1, "abc", string_3}, 3, 1, 2, {string_1, "ab", string_3}, true);
 }
+
 // #endregion
 
 // #region const char* line_to_c_string(Buffer&, const Length line_index);
@@ -1110,6 +1122,7 @@ TEST(engine, lineToCStringAtEndOfBufferWithManyLineWithOneCharacter) {
 TEST(engine, lineToCStringAtEndOfBufferWithManyLineWithManyCharacters) {
     test_line_to_c_string({string_1, string_2, "abc"}, 2, "abc");
 }
+
 // #endregion
 
 // #region const char* buffer_to_c_string(Buffer&);
@@ -1142,4 +1155,5 @@ TEST(engine, bufferToCStringWithNonEmptyBuffer) {
     ASSERT_STREQ(result, expected_result.c_str());
     free(static_cast<void*>(result));
 }
+
 // #endregion

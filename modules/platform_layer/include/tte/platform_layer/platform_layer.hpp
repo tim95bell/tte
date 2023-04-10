@@ -49,6 +49,7 @@ namespace tte { namespace platform_layer {
 
     struct Event {
         EventType type;
+
         union {
             KeyEventData key;
         };

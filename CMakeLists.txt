@@ -9,10 +9,10 @@ option(TTE_UNIT_TEST "Build Unit Tests" TRUE)
 
 # TODO(TB): how to set SDL2_DIR, SDL2_image_DIR, SDL2_ttf_DIR for both debug and release?
 #set(SDL2_DIR "./build/SDL2/$<IF:$<CONFIG:Debug>,Debug,Release>/lib/cmake/SDL2")
-set(SDL2_DIR "./build/SDL/Debug/lib/cmake/SDL2")
+set(SDL2_DIR "./libs/SDL/Debug/lib/cmake/SDL2")
 #set(SDL2_image_DIR "./build/SDL2_image/$<IF:$<CONFIG:Debug>,Debug,Release>/SDL2_image.framework/Resources")
-set(SDL2_image_DIR "./build/SDL_image/Debug/SDL2_image.framework/Resources")
-set(SDL2_ttf_DIR "./build/SDL_ttf/Debug/lib/cmake/SDL2_ttf")
+set(SDL2_image_DIR "./libs/SDL_image/Debug/SDL2_image.framework/Resources")
+set(SDL2_ttf_DIR "./libs/SDL_ttf/Debug/lib/cmake/SDL2_ttf")
 
 add_compile_definitions(
     "TTE_DEBUG=$<BOOL:$<CONFIG:Debug>>"

@@ -1,7 +1,6 @@
 
 #include <tte/platform_layer/platform_layer.hpp>
 #include <tte/common/assert.hpp>
-#include <stdio.h>
 #include <filesystem>
 #include <SDL.h>
 #include <SDL_image.h>

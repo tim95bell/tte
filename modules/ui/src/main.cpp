@@ -2,7 +2,7 @@
 #include <tte/engine/engine.hpp>
 #include <tte/platform_layer/platform_layer.hpp>
 #include <tte/common/assert.hpp>
-#include <iostream>
+#include <cstdlib>
 
 namespace tte { namespace ui {
     struct Cursor {

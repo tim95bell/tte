@@ -1,7 +1,7 @@
 
 #include <tte/engine/engine.hpp>
 #include <tte/common/assert.hpp>
-#include <cassert>
+#include <cstdlib>
 #include <cstring>
 #include <algorithm>
 
@@ -18,7 +18,7 @@ namespace tte { namespace engine {
     };
 
     static inline void insert_empty_line_internal(Line** line) {
-        TTE_ASSERT(line)
+        TTE_ASSERT(line);
         // next could be nullptr
         Line* const next = *line;
         *line = static_cast<Line*>(malloc(sizeof(Line)));
@@ -28,7 +28,7 @@ namespace tte { namespace engine {
     }
 
     static inline void insert_line_internal(Line** line, const Char* data, const Length data_length) {
-        TTE_ASSERT(line)
+        TTE_ASSERT(line);
         // when data is nullptr, data_length must be 0. data_length could be 0 when data is not nullptr.
         TTE_ASSERT(data != nullptr || data_length == 0);
         insert_empty_line_internal(line);

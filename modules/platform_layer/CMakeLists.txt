@@ -23,7 +23,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${source_files} ${include_
 
 target_link_libraries("${PROJECT_NAME}"
     PUBLIC
-    tte_common 
+    tte_common
     PRIVATE
     SDL2::SDL2-static
     SDL2_image::SDL2_image-static

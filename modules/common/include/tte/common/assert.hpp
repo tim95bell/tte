@@ -1,9 +1,7 @@
 
 #pragma once
 
-#include <cstring>
 #include <cstdio>
-#include <type_traits>
 
 #if TTE_DEBUG
 #define TTE_BREAK_IN_DEBUGGER \

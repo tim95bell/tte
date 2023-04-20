@@ -24,6 +24,7 @@ namespace tte { namespace platform_layer {
     struct Font {};
 
     static void send_event(Event);
+    static void send_window_resized_event();
     static void resize_buffer(Window*);
 }}
 
@@ -48,10 +49,7 @@ namespace tte { namespace platform_layer {
 - (void)windowDidResize:(NSNotification*)notification {
     resize_buffer(self->window);
     show_buffer(*self->window);
-    tte::platform_layer::Event e;
-    tte::platform_layer::create_window_resized_event(e);
-    // TODO(TB): too many resize events queued up
-    tte::platform_layer::send_event(e);
+    tte::platform_layer::send_window_resized_event();
 }
 @end
 
@@ -183,6 +181,15 @@ namespace tte { namespace platform_layer {
     static void send_event(Event event) {
         flush_ns_events_to_event_queue();
         push_event(event);
+    }
+
+    static void send_window_resized_event() {
+        flush_ns_events_to_event_queue();
+        if (!event_queue_tail || event_queue_tail->event.type != EventType::WindowResized) {
+            tte::platform_layer::Event e;
+            tte::platform_layer::create_window_resized_event(e);
+            tte::platform_layer::send_event(e);
+        }
     }
 
     static void init_buffer(Window* window) {

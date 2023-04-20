@@ -121,11 +121,13 @@ namespace tte { namespace ui {
                                 if (engine::merge_lines(*app.buffer, app.cursor.line - 1)) {
                                     app.cursor.line = app.cursor.line - 1;
                                     app.cursor.character = old_line_length;
+                                    draw(&app);
                                 }
                             }
                         } else {
                             if (engine::delete_character(*app.buffer, app.cursor.line, app.cursor.character - 1)) {
                                 --app.cursor.character;
+                                draw(&app);
                             } else {
                                 TTE_ASSERT(false);
                             }
@@ -133,6 +135,7 @@ namespace tte { namespace ui {
                     } else if (e.key.keycode == platform_layer::KeyCode::Space) {
                         if (engine::insert_character(*app.buffer, app.cursor.line, app.cursor.character, ' ')) {
                             ++app.cursor.character;
+                            draw(&app);
                         } else {
                             TTE_ASSERT(false);
                         }
@@ -142,6 +145,7 @@ namespace tte { namespace ui {
                         if (result) {
                             ++app.cursor.line;
                             app.cursor.character = 0;
+                            draw(&app);
                         }
                     } else if (e.key.keycode != platform_layer::KeyCode::Unknown) {
                         if (engine::insert_character(*app.buffer,
@@ -149,6 +153,7 @@ namespace tte { namespace ui {
                                 app.cursor.character,
                                 platform_layer::get_key_code_character(e.key.keycode))) {
                             ++app.cursor.character;
+                            draw(&app);
                         } else {
                             TTE_ASSERT(false);
                         }

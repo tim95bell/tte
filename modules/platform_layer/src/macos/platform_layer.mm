@@ -274,7 +274,23 @@ namespace tte { namespace platform_layer {
     }
 
     void fill_rect(Window& window, U32 x, U32 y, U32 width, U32 height, U8 r, U8 g, U8 b) {
-        // TODO(TB): missing implementation
+        if (x + width < 0 || x > window.buffer_width || y + height < 0 || y > window.buffer_height) {
+            // whole rectangle off screen
+            return;
+        }
+
+        // TODO(TB): make Window::buffer_width and Window::buffer_height U32?
+        const Length until_y = std::min(y + height, static_cast<U32>(window.buffer_height));
+        const Length until_x = std::min(x + width, static_cast<U32>(window.buffer_width));
+        for (U32 y_index = std::max<U32>(y, 0); y_index < until_y; ++y_index) {
+            for (U32 x_index = std::max<U32>(x, 0); x_index < until_x; ++x_index) {
+                U8* component = window.buffer + (((y_index * window.buffer_width) + x_index) * TTE_BITMAP_BYTES_PER_PIXEL);
+                *component++ = r;
+                *component++ = g;
+                *component++ = b;
+                // TODO(TB): alpha
+            }
+        }
     }
 
     void render_text(Window& window, Font& font, const char* text, S32 x, S32 y, U8 r, U8 g, U8 b) {

@@ -7,7 +7,7 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
-#include "common.cpp"
+#include "../common.cpp"
 
 namespace tte { namespace platform_layer {
     // #region internal

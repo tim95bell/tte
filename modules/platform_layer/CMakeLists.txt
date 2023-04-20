@@ -10,7 +10,7 @@ set(
 
 set(
     source_files
-    src/platform_layer.cpp
+    src/sdl/platform_layer.cpp
 )
 
 add_library(

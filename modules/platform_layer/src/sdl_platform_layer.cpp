@@ -2,20 +2,15 @@
 #include <tte/platform_layer/platform_layer.hpp>
 #include <tte/common/assert.hpp>
 #include <filesystem>
+#include <cstdlib>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
+#include "common.cpp"
+
 namespace tte { namespace platform_layer {
     // #region internal
-    static void create_quit_event(Event& e) { e.type = EventType::Quit; }
-
-    static void create_key_down_event(Event& e, KeyCode keyCode, U8 repeat) {
-        e.type = EventType::KeyDown;
-        e.key.keycode = keyCode;
-        e.key.repeat = repeat;
-    }
-
     [[nodiscard]] static KeyCode sdl_key_to_tte_key(SDL_Keycode code) {
         if (code >= SDLK_a && code <= SDLK_z) {
             return static_cast<KeyCode>(static_cast<S32>(KeyCode::A) + (code - SDLK_a));
@@ -81,7 +76,7 @@ namespace tte { namespace platform_layer {
             SDL_WINDOWPOS_UNDEFINED,
             static_cast<S32>(width),
             static_cast<S32>(height),
-            SDL_WINDOW_SHOWN);
+            SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
         if (!result->window) {
             TTE_DBG("Failed to create SDL window: %s", SDL_GetError());
             free(result);
@@ -117,6 +112,11 @@ namespace tte { namespace platform_layer {
             if (sdl_e.type == SDL_QUIT) {
                 create_quit_event(e);
                 return true;
+            } else if (sdl_e.type == SDL_WINDOWEVENT) {
+                if (sdl_e.window.event == SDL_WINDOWEVENT_RESIZED) {
+                    create_window_resized_event(e);
+                    return true;
+                }
             } else if (sdl_e.type == SDL_KEYDOWN) {
                 create_key_down_event(e, sdl_key_to_tte_key(sdl_e.key.keysym.sym), sdl_e.key.repeat);
                 return true;
@@ -125,8 +125,8 @@ namespace tte { namespace platform_layer {
         return false;
     }
 
-    void clear_buffer(Window& window, U8 r, U8 g, U8 b) {
-        SDL_SetRenderDrawColor(window.renderer, r, g, b, 0xFF);
+    void clear_buffer(Window& window, U8 r, U8 g, U8 b, U8 a) {
+        SDL_SetRenderDrawColor(window.renderer, r, g, b, a);
         SDL_RenderClear(window.renderer);
     }
 
@@ -170,15 +170,6 @@ namespace tte { namespace platform_layer {
     void close_font(Font& font) {
         TTF_CloseFont(font.font);
         free(&font);
-    }
-
-    char get_key_code_character(KeyCode code) {
-        if (code >= KeyCode::A && code <= KeyCode::Z) {
-            return static_cast<char>(static_cast<U8>('a') + (static_cast<S32>(code) - static_cast<S32>(KeyCode::A)));
-        }
-
-        TTE_ASSERT(false);
-        return ' ';
     }
 
     U32 get_cursor_x(Font& font, const char* line, Length cursorIndex) {

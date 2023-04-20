@@ -7,7 +7,8 @@ namespace tte { namespace platform_layer {
     struct Window;
     struct Font;
 
-    enum class EventType { Quit, KeyDown, KeyUp };
+    // TODO(TB): should WindowClose and WindowResized be a sub event of type Window?
+    enum class EventType { Quit, KeyDown, KeyUp, WindowClose, WindowResized };
 
     enum class KeyCode {
         Unknown,
@@ -62,7 +63,7 @@ namespace tte { namespace platform_layer {
     extern void fill_rect(Window& window, U32 x, U32 y, U32 width, U32 height, U8 r, U8 g, U8 b);
     extern void render_text(Window& window, Font& font, const char* text, S32 x, S32 y, U8 r, U8 g, U8 b);
     [[nodiscard]] extern bool poll_events(Event&);
-    extern void clear_buffer(Window& window, U8 r, U8 g, U8 b);
+    extern void clear_buffer(Window& window, U8 r, U8 g, U8 b, U8 a);
     extern void show_buffer(Window& window);
     [[nodiscard]] extern Font* open_font(const char* path, U32 size);
     extern void close_font(Font& font);

@@ -56,6 +56,15 @@ else()
         -Wimplicit-fallthrough
         -Wno-format-nonliteral
     )
+    if (NOT TTE_WARNING_LEVEL_STRICT)
+        target_compile_options(
+            "${warning_flags_library}"
+            INTERFACE
+            -Wno-parentheses
+            -Wno-unused-function
+            -Wno-unused-parameter
+        )
+    endif()
     if (TTE_WARNINGS_AS_ERRORS)
         target_compile_options(
             "${warning_flags_library}"

@@ -55,7 +55,7 @@ namespace tte { namespace engine {
         return nullptr;
     }
 
-    [[maybe_unused, nodiscard]] static inline Line** get_closest_line_internal(Buffer& buffer,
+    [[nodiscard]] static inline Line** get_closest_line_internal(Buffer& buffer,
         const Length line_index) {
         Line** line = &buffer.first_line;
         for (Length i = 0; i < line_index && line && *line; ++i) {

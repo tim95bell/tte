@@ -34,9 +34,9 @@ namespace tte { namespace platform_layer {
 @end
 
 @implementation TTEWindowDelegate 
-- (instancetype)initWithWindow:(tte::platform_layer::Window*)window {
+- (instancetype)initWithWindow:(tte::platform_layer::Window*)inWindow {
     if (self = [super init]) {
-        self->window = window;
+        self->window = inWindow;
     }
     return self;
 }
@@ -62,9 +62,9 @@ namespace tte { namespace platform_layer {
 @end
 
 @implementation TTEView
-- (instancetype)initWithFrame:(NSRect)frameRect window:(tte::platform_layer::Window*)window {
+- (instancetype)initWithFrame:(NSRect)frameRect window:(tte::platform_layer::Window*)inWindow {
     if (self = [super initWithFrame: frameRect]) {
-        self->window = window;
+        self->window = inWindow;
     }
     return self;
 }
@@ -84,7 +84,8 @@ namespace tte { namespace platform_layer {
     CGColorSpaceRelease(colour_space);
 
     CGImageRef image = CGBitmapContextCreateImage(bitmap_context);
-    CGContextRef graphics_context = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+    CGContextRef graphics_context = [[NSGraphicsContext currentContext] CGContext];
+
     CGContextDrawImage(graphics_context, bounds, image);
 
     TTE_ASSERT(CGBitmapContextGetData(bitmap_context) == self->window->buffer);
@@ -185,8 +186,8 @@ namespace tte { namespace platform_layer {
     }
 
     static void init_buffer(Window* window) {
-        window->buffer_width = window->ns_window.contentView.bounds.size.width;
-        window->buffer_height = window->ns_window.contentView.bounds.size.height;
+        window->buffer_width = static_cast<U64>(window->ns_window.contentView.bounds.size.width);
+        window->buffer_height = static_cast<U64>(window->ns_window.contentView.bounds.size.height);
         const Length new_buffer_num_bytes = window->buffer_width * window->buffer_height * TTE_BITMAP_BYTES_PER_PIXEL;
         window->buffer = static_cast<U8*>(malloc(new_buffer_num_bytes));
         // TOOD(TB): memset could be compiled away?
@@ -197,8 +198,8 @@ namespace tte { namespace platform_layer {
         const Length old_width = window->buffer_width;
         const Length old_height = window->buffer_height;
         U8* old_buffer = window->buffer;
-        window->buffer_width = window->ns_window.contentView.bounds.size.width;
-        window->buffer_height = window->ns_window.contentView.bounds.size.height;
+        window->buffer_width = static_cast<U64>(window->ns_window.contentView.bounds.size.width);
+        window->buffer_height = static_cast<U64>(window->ns_window.contentView.bounds.size.height);
         const Length new_buffer_num_bytes = window->buffer_width * window->buffer_height * TTE_BITMAP_BYTES_PER_PIXEL;
         window->buffer = static_cast<U8*>(malloc(new_buffer_num_bytes));
         // TOOD(TB): memset could be compiled away?
@@ -282,8 +283,8 @@ namespace tte { namespace platform_layer {
     }
 
     void clear_buffer(Window& window, U8 r, U8 g, U8 b, U8 a) {
-        const int width = window.buffer_width;
-        const int height = window.buffer_height;
+        const U64 width = window.buffer_width;
+        const U64 height = window.buffer_height;
         U8* component = window.buffer;
         for (Length y = 0; y < height; ++y) {
             for (Length x = 0; x < width; ++x) {

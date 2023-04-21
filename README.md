@@ -41,7 +41,7 @@ cmake --build build/tte
 ## Run
 
 ```Shell
-./build/tte/modules/ui/Debug/tte_ui
+./build/tte/modules/app/Debug/tte_app
 ```
 
 ## Run Unit Tests

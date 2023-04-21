@@ -14,6 +14,7 @@
 
 namespace tte { namespace platform_layer {
     struct Window {
+        PlatformLayer* platform_layer;
         NSWindow* ns_window;
         TTEWindowDelegate* ns_window_delegate;
         U8* buffer;
@@ -23,8 +24,6 @@ namespace tte { namespace platform_layer {
 
     struct Font {};
 
-    static void send_event(Event);
-    static void send_window_resized_event();
     static void resize_buffer(Window*);
 }}
 
@@ -42,14 +41,15 @@ namespace tte { namespace platform_layer {
     return self;
 }
 - (void)windowWillClose:(id)sender {
-    tte::platform_layer::Event e;
+    tte::common::Event e;
     tte::platform_layer::create_window_close_event(e);
-    tte::platform_layer::send_event(e);
+    self->window->platform_layer->handle_event(e);
 }
 - (void)windowDidResize:(NSNotification*)notification {
     resize_buffer(self->window);
-    show_buffer(*self->window);
-    tte::platform_layer::send_window_resized_event();
+    tte::common::Event e;
+    tte::platform_layer::create_window_resized_event(e);
+    self->window->platform_layer->handle_event(e);
 }
 @end
 
@@ -94,104 +94,6 @@ namespace tte { namespace platform_layer {
 @end
 
 namespace tte { namespace platform_layer {
-    struct EventQueue {
-        Event event;
-        EventQueue* next_event;
-    };
-
-    static EventQueue* event_queue_tail = nullptr;
-    static EventQueue* event_queue_head = nullptr;
-
-    static void push_event(Event event) {
-        if (event_queue_head) {
-            if (event_queue_head == event_queue_tail) {
-                event_queue_tail = static_cast<EventQueue*>(malloc(sizeof(EventQueue)));
-                event_queue_tail->event = event;
-                event_queue_tail->next_event = nullptr;
-                event_queue_head->next_event = event_queue_tail;
-            } else {
-                TTE_ASSERT(event_queue_tail);
-                EventQueue* new_event_queue_tail = static_cast<EventQueue*>(malloc(sizeof(EventQueue)));
-                new_event_queue_tail->event = event;
-                new_event_queue_tail->next_event = nullptr;
-                event_queue_tail->next_event = new_event_queue_tail;
-                event_queue_tail = new_event_queue_tail;
-            }
-        } else {
-            TTE_ASSERT(!event_queue_tail);
-            event_queue_head = event_queue_tail = static_cast<EventQueue*>(malloc(sizeof(EventQueue)));
-            event_queue_head->event = event;
-            event_queue_head->next_event = nullptr;
-        }
-    }
-
-    [[nodiscard]] static bool pop_event(Event& event) {
-        if (event_queue_head) {
-            if (event_queue_tail == event_queue_head) {
-                event_queue_tail = nullptr;
-            }
-
-            event = event_queue_head->event;
-            EventQueue* old_event_queue_head = event_queue_head;
-            event_queue_head = event_queue_head->next_event;
-            free(old_event_queue_head);
-            return true;
-        }
-        return false;
-    }
-
-    static void free_event_queue() {
-        EventQueue* next_event = event_queue_head;
-        while (next_event) {
-            next_event = event_queue_head->next_event;
-            free(event_queue_head);
-            event_queue_head = next_event;
-        }
-        event_queue_tail = nullptr;
-    }
-
-    [[nodiscard]] static bool poll_ns_events(Event& event) {
-        @autoreleasepool {
-            NSDate* until_date = [NSDate date];
-            NSEvent* ns_event;
-
-            while (ns_event = [NSApp nextEventMatchingMask: NSEventMaskAny
-                untilDate: until_date
-                inMode: NSDefaultRunLoopMode
-                dequeue: true]) {
-                switch ([ns_event type]) {
-                    default:
-                        [NSApp sendEvent: ns_event];
-                }
-
-                // TODO(TB): create an event from 'ns_event' and fill out 'event' based on it, and return true
-                //return true;
-            }
-        }
-        return false;
-    }
-
-    static void flush_ns_events_to_event_queue() {
-        Event event;
-        while (poll_ns_events(event)) {
-            push_event(event);
-        }
-    }
-
-    static void send_event(Event event) {
-        flush_ns_events_to_event_queue();
-        push_event(event);
-    }
-
-    static void send_window_resized_event() {
-        flush_ns_events_to_event_queue();
-        if (!event_queue_tail || event_queue_tail->event.type != EventType::WindowResized) {
-            tte::platform_layer::Event e;
-            tte::platform_layer::create_window_resized_event(e);
-            tte::platform_layer::send_event(e);
-        }
-    }
-
     static void init_buffer(Window* window) {
         window->buffer_width = static_cast<U64>(window->ns_window.contentView.bounds.size.width);
         window->buffer_height = static_cast<U64>(window->ns_window.contentView.bounds.size.height);
@@ -222,7 +124,7 @@ namespace tte { namespace platform_layer {
         free(old_buffer);
     }
 
-    bool init() {
+    bool init(PlatformLayer*) {
         @autoreleasepool {
             // TODO(TB): should there be a top level auto release pool that is created here and released in 'deinit'?
             [NSApplication sharedApplication];
@@ -230,13 +132,12 @@ namespace tte { namespace platform_layer {
         return true;
     }
 
-    void deinit() {
-        free_event_queue();
-    }
+    void deinit(PlatformLayer*) {}
 
-    Window* create_window(U32 width, U32 height) {
+    Window* create_window(PlatformLayer* platform_layer, U32 width, U32 height) {
         Window* result = static_cast<Window*>(malloc(sizeof(Window)));
         result->buffer = nullptr;
+        result->platform_layer = platform_layer;
         @autoreleasepool {
             NSRect screen_rect = [[NSScreen mainScreen] frame];
             NSRect initial_frame = NSMakeRect((screen_rect.size.width - static_cast<double>(width)) * 0.5,
@@ -267,13 +168,13 @@ namespace tte { namespace platform_layer {
         return result;
     }
 
-    void destroy_window(Window& window) {
+    void destroy_window(PlatformLayer*, Window& window) {
         [window.ns_window_delegate release];
         [window.ns_window release];
         free(&window);
     }
 
-    void fill_rect(Window& window, U32 x, U32 y, U32 width, U32 height, U8 r, U8 g, U8 b) {
+    void fill_rect(PlatformLayer*, Window& window, U32 x, U32 y, U32 width, U32 height, U8 r, U8 g, U8 b) {
         if (x + width < 0 || x > window.buffer_width || y + height < 0 || y > window.buffer_height) {
             // whole rectangle off screen
             return;
@@ -293,19 +194,11 @@ namespace tte { namespace platform_layer {
         }
     }
 
-    void render_text(Window& window, Font& font, const char* text, S32 x, S32 y, U8 r, U8 g, U8 b) {
+    void render_text(PlatformLayer*, Window& window, Font& font, const char* text, S32 x, S32 y, U8 r, U8 g, U8 b) {
         // TODO(TB): missing implementation
     }
 
-    bool poll_events(Event& event) {
-        if (event_queue_head) {
-            return pop_event(event);
-        }
-
-        return poll_ns_events(event);
-    }
-
-    void clear_buffer(Window& window, U8 r, U8 g, U8 b, U8 a) {
+    void clear_buffer(PlatformLayer*, Window& window, U8 r, U8 g, U8 b, U8 a) {
         const U64 width = window.buffer_width;
         const U64 height = window.buffer_height;
         U8* component = window.buffer;
@@ -319,27 +212,43 @@ namespace tte { namespace platform_layer {
         }
     }
 
-    void show_buffer(Window& window) {
+    void show_buffer(PlatformLayer*, Window& window) {
         [window.ns_window.contentView setNeedsDisplay: true];
     }
 
-    Font* open_font(const char* path, U32 size) {
+    Font* open_font(PlatformLayer*, const char* path, U32 size) {
         // TODO(TB): missing implementation
         return nullptr;
     }
 
-    void close_font(Font& font) {
+    void close_font(PlatformLayer*, Font& font) {
         // TODO(TB): missing implementation
     }
 
-    U32 get_cursor_x(Font& font, const char* line, U64 cursorIndex) {
+    U32 get_cursor_x(PlatformLayer*, Font& font, const char* line, U64 cursorIndex) {
         // TODO(TB): missing implementation
         return 0;
     }
 
-    Length get_fonts(platform_layer::Font** fonts, const U32 size) {
+    Length get_fonts(PlatformLayer*, platform_layer::Font** fonts, const U32 size) {
         // TODO(TB): missing implementation
         *fonts = nullptr;
         return 0;
+    }
+
+    void run(PlatformLayer*) {
+        @autoreleasepool {
+            if (NSEvent* ns_event = [NSApp nextEventMatchingMask: NSEventMaskAny
+                untilDate: nil
+                inMode: NSDefaultRunLoopMode
+                dequeue: true]) {
+                switch ([ns_event type]) {
+                    default:
+                        [NSApp sendEvent: ns_event];
+                }
+
+                // TODO(TB): call handle_event
+            }
+        }
     }
 }}

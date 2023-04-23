@@ -40,7 +40,13 @@ namespace tte { namespace common {
 
     struct Event {
         // TODO(TB): should WindowClose and WindowResized be a sub event of type Window?
-        enum class Type { Unknown, Quit, KeyDown, KeyUp, WindowClose, WindowResized };
+        enum class Type {
+#if TTE_HOT_RELOAD
+            DidHotReload = 0,
+#endif
+            Null = 0,
+            Unknown, Quit, KeyDown, KeyUp, WindowClose, WindowResized
+        };
 
         struct KeyData {
             U8 repeat;

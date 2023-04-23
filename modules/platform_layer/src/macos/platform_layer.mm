@@ -4,6 +4,7 @@
 #include <AppKit/AppKit.h>
 #include <cstdlib>
 #include <algorithm>
+#include <unistd.h>
 
 #include "../common.cpp"
 
@@ -250,5 +251,9 @@ namespace tte { namespace platform_layer {
                 // TODO(TB): call handle_event
             }
         }
+    }
+
+    void sleep(U64 milliseconds) {
+        usleep(milliseconds * 1000);
     }
 }}

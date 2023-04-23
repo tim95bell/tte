@@ -27,4 +27,5 @@ namespace tte { namespace platform_layer {
     [[nodiscard]] extern U32 get_cursor_x(PlatformLayer*, Font& font, const char* line, U64 cursorIndex);
     [[nodiscard]] extern Length get_fonts(PlatformLayer*, platform_layer::Font** fonts, const U32 size);
     extern void run(PlatformLayer*);
+    extern void sleep(U64 milliseconds);
 }}

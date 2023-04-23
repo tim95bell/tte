@@ -1,7 +1,5 @@
 
-// TODO(TB): make this include library style
-//#include <tte/app/app.hpp>
-#include "../include/app/app.hpp"
+#include <tte/app/app.hpp>
 #include <tte/platform_layer/platform_layer.hpp>
 #include <tte/common/number_types.hpp>
 #include <tte/common/assert.hpp>
@@ -10,8 +8,51 @@
 #include <cstdlib>
 
 namespace tte { namespace app {
-    void draw(App* app) {
-        platform_layer::clear_buffer(&app->platform_layer, *app->window, 0xFF, 0xFF, 0xFF, 0xFF);
+    INIT_FUNCTION(init) {
+        if (!platform_layer::init(&app->platform_layer)) {
+            return false;
+        }
+
+        app->font_size = 16;
+        app->buffer = &engine::create_buffer();
+
+        if (!engine::insert_empty_line(*app->buffer, 0)) {
+            engine::destroy_buffer(*app->buffer);
+            platform_layer::deinit(&app->platform_layer);
+            return;
+        }
+
+        app->window = platform_layer::create_window(&app->platform_layer, 640, 480);
+        if (!app->window) {
+            engine::destroy_buffer(*app->buffer);
+            platform_layer::deinit(&app->platform_layer);
+            return;
+        }
+
+        app->num_fonts = get_fonts(&app->platform_layer, &app->fonts, app->font_size);
+
+    #if TTE_SDL
+        if (app->num_fonts == 0) {
+            TTE_DBG("Could not find any fonts");
+            platform_layer::destroy_window(*app->window);
+            engine::destroy_buffer(*app->buffer);
+            platform_layer::deinit();
+            return;
+        }
+    #endif
+
+        app->font = app->fonts;
+    }
+
+    DEINIT_FUNCTION(deinit) {
+        free(app->fonts);
+        platform_layer::destroy_window(&app->platform_layer, *app->window);
+        engine::destroy_buffer(*app->buffer);
+        platform_layer::deinit(&app->platform_layer);
+    }
+
+    DRAW_FUNCTION(draw) {
+        platform_layer::clear_buffer(&app->platform_layer, *app->window, 0xFF, 0x00, 0xFF, 0xFF);
         Length buffer_length = engine::get_buffer_length(*app->buffer);
 
         if (app->cursor.line < buffer_length) {
@@ -52,15 +93,17 @@ namespace tte { namespace app {
         platform_layer::show_buffer(&app->platform_layer, *app->window);
     }
 
-    void handle_event(App* app, common::Event e) {
-        if (e.type == common::Event::Type::Quit) {
+    HANDLE_EVENT_FUNCTION(handle_event) {
+        if (event.type == common::Event::Type::Quit) {
             app->running = false;
-        } else if (e.type == common::Event::Type::WindowClose) {
-            app->running = false;
-        } else if (e.type == common::Event::Type::WindowResized) {
+        } else if (event.type == common::Event::Type::DidHotReload) {
             draw(app);
-        } else if (e.type == common::Event::Type::KeyDown) {
-            if (e.key.keycode == common::KeyCode::Backspace) {
+        } else if (event.type == common::Event::Type::WindowClose) {
+            app->running = false;
+        } else if (event.type == common::Event::Type::WindowResized) {
+            draw(app);
+        } else if (event.type == common::Event::Type::KeyDown) {
+            if (event.key.keycode == common::KeyCode::Backspace) {
                 if (app->cursor.character == 0) {
                     if (app->cursor.line != 0) {
                         const Length old_line_length =
@@ -79,14 +122,14 @@ namespace tte { namespace app {
                         TTE_ASSERT(false);
                     }
                 }
-            } else if (e.key.keycode == common::KeyCode::Space) {
+            } else if (event.key.keycode == common::KeyCode::Space) {
                 if (engine::insert_character(*app->buffer, app->cursor.line, app->cursor.character, ' ')) {
                     ++app->cursor.character;
                     draw(app);
                 } else {
                     TTE_ASSERT(false);
                 }
-            } else if (e.key.keycode == common::KeyCode::Return) {
+            } else if (event.key.keycode == common::KeyCode::Return) {
                 const bool result = engine::insert_empty_line(*app->buffer, app->cursor.line + 1);
                 TTE_ASSERT(result);
                 if (result) {
@@ -94,11 +137,11 @@ namespace tte { namespace app {
                     app->cursor.character = 0;
                     draw(app);
                 }
-            } else if (e.key.keycode != common::KeyCode::Unknown) {
+            } else if (event.key.keycode != common::KeyCode::Unknown) {
                 if (engine::insert_character(*app->buffer,
                         app->cursor.line,
                         app->cursor.character,
-                        platform_layer::get_key_code_character(e.key.keycode))) {
+                        platform_layer::get_key_code_character(event.key.keycode))) {
                     ++app->cursor.character;
                     draw(app);
                 } else {
@@ -106,5 +149,9 @@ namespace tte { namespace app {
                 }
             }
         }
+    }
+
+    RUN_FUNCTION(run) {
+        platform_layer::run(&app->platform_layer);
     }
 }}

@@ -11,6 +11,7 @@ set(BUILD_SHARED_LIBS FALSE)
 option(TTE_UNIT_TEST "Build Unit Tests" TRUE)
 option(TTE_WARNINGS_AS_ERRORS "Treat Warnings As Errors" TRUE)
 option(TTE_WARNING_LEVEL_STRICT "Strict warnings" FALSE)
+option(TTE_HOT_RELOAD "Enable hot reloading of app code" FALSE)
 
 # TODO(TB): how to set SDL2_DIR, SDL2_image_DIR, SDL2_ttf_DIR for both debug and release?
 #set(SDL2_DIR "./build/SDL2/$<IF:$<CONFIG:Debug>,Debug,Release>/lib/cmake/SDL2")
@@ -21,6 +22,7 @@ set(SDL2_ttf_DIR "./libs/SDL_ttf/Debug/lib/cmake/SDL2_ttf")
 
 add_compile_definitions(
     "TTE_DEBUG=$<BOOL:$<CONFIG:Debug>>"
+    "TTE_HOT_RELOAD=$<BOOL:${TTE_HOT_RELOAD}>"
 )
 
 if(TTE_UNIT_TEST)

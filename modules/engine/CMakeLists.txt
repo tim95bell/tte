@@ -13,11 +13,19 @@ set(
     src/naive_engine.cpp
 )
 
-add_library(
-    "${PROJECT_NAME}"
-    STATIC
-    ${source_files}
-)
+if(TTE_HOT_RELOAD)
+    add_library(
+        "${PROJECT_NAME}"
+        SHARED
+        ${source_files}
+    )
+else()
+    add_library(
+        "${PROJECT_NAME}"
+        STATIC
+        ${source_files}
+    )
+endif()
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${source_files} ${include_files})
 

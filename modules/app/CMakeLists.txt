@@ -14,15 +14,24 @@ set(
     include/tte/app/App.hpp
 )
 
-add_library(
-    "${PROJECT_NAME}_lib"
-    SHARED
-    ${app_lib_source_files}
-)
-
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${app_lib_source_files} ${app_lib_include_files})
 
-target_link_libraries("${PROJECT_NAME}_lib" PRIVATE tte_common tte_platform_layer tte_engine PUBLIC warning_flags)
+if(TTE_HOT_RELOAD)
+    add_library(
+        "${PROJECT_NAME}_lib"
+        SHARED
+        ${app_lib_source_files}
+    )
+
+
+    target_link_libraries("${PROJECT_NAME}_lib" PRIVATE tte_common tte_platform_layer tte_engine PUBLIC warning_flags)
+
+    target_include_directories(
+        "${PROJECT_NAME}_lib"
+        PUBLIC
+        include
+    )
+endif()
 #endregion
 
 # region app
@@ -42,7 +51,13 @@ add_executable(
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${app_source_files} ${app_header_files})
 
-target_link_libraries("${PROJECT_NAME}" PRIVATE tte_common tte_platform_layer tte_engine tte_app_lib PUBLIC warning_flags)
+target_link_libraries("${PROJECT_NAME}" PRIVATE tte_common tte_platform_layer tte_engine PUBLIC warning_flags)
+
+target_include_directories(
+    "${PROJECT_NAME}"
+    PUBLIC
+    include
+)
 # endregion
 
 if(APPLE)

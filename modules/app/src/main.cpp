@@ -28,7 +28,13 @@ namespace tte { namespace app {
     };
 
     static AppLib app_lib;
-    static const constexpr char* APP_LIB_DLL_PATH = "build/tte/modules/app/Debug/libtte_app_lib_2.dylib";
+    static const constexpr char* APP_LIB_DLL_PATH = "build/tte/modules/app/Debug/libtte.dylib.copy";
+
+    INIT_FUNCTION(init_stub) { return true; }
+    DEINIT_FUNCTION(deinit_stub) {}
+    DRAW_FUNCTION(draw_stub) {}
+    HANDLE_EVENT_FUNCTION(handle_event_stub) {}
+    RUN_FUNCTION(run_stub) {}
 
     [[nodiscard]] bool get_dll_last_modification_time(const char* dll_path, time_t* result) {
         struct stat data;
@@ -37,77 +43,52 @@ namespace tte { namespace app {
             return true;
         }
 
-        TTE_DBG("stat failed, error code: %d", errno);
         *result = 0;
         return false;
     }
 
     [[nodiscard]] static bool load_app_lib_dll(time_t last_modification_time) {
-        if (app_lib.dll && (last_modification_time == 0 || last_modification_time <= app_lib.last_modification_time)) {
+        if (last_modification_time <= app_lib.last_modification_time) {
             return false;
         }
 
         if (app_lib.dll) {
             if (dlclose(app_lib.dll) != 0) {
-                TTE_DBG("failed to close dll");
+                TTE_DBG("Failed to close app lib dll");
                 return false;
             }
         }
 
         app_lib.dll = nullptr;
-        app_lib.init = nullptr;
-        app_lib.deinit = nullptr;
-        app_lib.draw = nullptr;
-        app_lib.handle_event = nullptr;
-        app_lib.run = nullptr;
+        app_lib.init = init_stub;
+        app_lib.deinit = deinit_stub;
+        app_lib.draw = draw_stub;
+        app_lib.handle_event = handle_event_stub;
+        app_lib.run = run_stub;
 
-        app_lib.dll = dlopen(APP_LIB_DLL_PATH, RTLD_NOW);
-        if (!app_lib.dll) {
-            TTE_DBG("failed to load tte_app_lib dynamic library");
-            TTE_DBG("%s", dlerror());
-            return false;
-        }
+        if (app_lib.dll = dlopen(APP_LIB_DLL_PATH, RTLD_NOW)) {
+            init_function* init = (init_function*)dlsym(app_lib.dll, "init");
+            deinit_function* deinit = (deinit_function*)dlsym(app_lib.dll, "deinit");
+            draw_function* draw = (draw_function*)dlsym(app_lib.dll, "draw");
+            handle_event_function* handle_event = (handle_event_function*)dlsym(app_lib.dll, "handle_event");
+            run_function* run = (run_function*)dlsym(app_lib.dll, "run");
+            if (init && deinit && draw && handle_event && run) {
+                app_lib.init = init;
+                app_lib.deinit = deinit;
+                app_lib.draw = draw;
+                app_lib.handle_event = handle_event;
+                app_lib.run = run;
+                app_lib.last_modification_time = last_modification_time;
+                return true;
+            }
 
-        // TODO(TB): can't static cast?
-        //app_lib.init = static_cast<init_function*>(dlsym(app_lib.dll, "draw"));
-        app_lib.init = (init_function*)dlsym(app_lib.dll, "init");
-        if (!app_lib.init) {
-            TTE_DBG("failed to load tte_app_lib dynamic library init function");
+            if (dlclose(app_lib.dll) != 0) {
+                TTE_DBG("Failed to close app lib dll");
+            }
             app_lib.dll = nullptr;
-            return false;
         }
 
-        app_lib.deinit = (deinit_function*)dlsym(app_lib.dll, "deinit");
-        if (!app_lib.deinit) {
-            TTE_DBG("failed to load tte_app_lib dynamic library deinit function");
-            app_lib.dll = nullptr;
-            return false;
-        }
-
-        app_lib.draw = (draw_function*)dlsym(app_lib.dll, "draw");
-        if (!app_lib.draw) {
-            TTE_DBG("failed to load tte_app_lib dynamic library draw function");
-            app_lib.dll = nullptr;
-            return false;
-        }
-
-        app_lib.handle_event = (handle_event_function*)dlsym(app_lib.dll, "handle_event");
-        if (!app_lib.handle_event) {
-            TTE_DBG("failed to load tte_app_lib dynamic library handle_event function");
-            app_lib.dll = nullptr;
-            return false;
-        }
-
-        app_lib.run = (run_function*)dlsym(app_lib.dll, "run");
-        if (!app_lib.run) {
-            TTE_DBG("failed to load tte_app_lib dynamic library run function");
-            app_lib.dll = nullptr;
-            return false;
-        }
-
-        app_lib.last_modification_time = last_modification_time;
-
-        return true;
+        return false;
     }
 
     [[nodiscard]] static bool load_app_lib_dll() {
@@ -133,7 +114,7 @@ namespace tte { namespace app {
 int main() {
 #if TTE_HOT_RELOAD
     if (!tte::app::load_app_lib_dll()) {
-        TTE_DBG("failed to load app lib dll");
+        TTE_DBG("Failed to load app lib dll");
         return 0;
     }
 #endif

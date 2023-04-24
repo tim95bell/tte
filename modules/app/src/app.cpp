@@ -19,14 +19,14 @@ namespace tte { namespace app {
         if (!engine::insert_empty_line(*app->buffer, 0)) {
             engine::destroy_buffer(*app->buffer);
             platform_layer::deinit(&app->platform_layer);
-            return;
+            return false;
         }
 
         app->window = platform_layer::create_window(&app->platform_layer, 640, 480);
         if (!app->window) {
             engine::destroy_buffer(*app->buffer);
             platform_layer::deinit(&app->platform_layer);
-            return;
+            return false;
         }
 
         app->num_fonts = get_fonts(&app->platform_layer, &app->fonts, app->font_size);
@@ -37,11 +37,12 @@ namespace tte { namespace app {
             platform_layer::destroy_window(*app->window);
             engine::destroy_buffer(*app->buffer);
             platform_layer::deinit();
-            return;
+            return false;
         }
     #endif
 
         app->font = app->fonts;
+        return true;
     }
 
     DEINIT_FUNCTION(deinit) {
@@ -96,9 +97,13 @@ namespace tte { namespace app {
     HANDLE_EVENT_FUNCTION(handle_event) {
         if (event.type == common::Event::Type::Quit) {
             app->running = false;
-        } else if (event.type == common::Event::Type::DidHotReload) {
+        }
+#if TTE_HOT_RELOAD
+        else if (event.type == common::Event::Type::DidHotReload) {
             draw(app);
-        } else if (event.type == common::Event::Type::WindowClose) {
+        }
+#endif
+        else if (event.type == common::Event::Type::WindowClose) {
             app->running = false;
         } else if (event.type == common::Event::Type::WindowResized) {
             draw(app);

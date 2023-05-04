@@ -285,6 +285,7 @@ namespace tte { namespace ttf {
         // 	Glyph index array
         // length is variable
         U16* glyph_index_array;
+        Length glyph_index_array_length;
     };
 
     static const constexpr Length cmap_subtable_format_4_min_size_without_arrays = sizeof(U16) * 7;
@@ -386,7 +387,8 @@ namespace tte { namespace ttf {
                 return false;
             }
             U8* const file_iter_at_copy = file_iter->at;
-            file_iter->at = cmap_table_begin + cmap_table->encoding_subtable_array[i].offset;
+            U8* const cmap_subtable_begin = cmap_table_begin + cmap_table->encoding_subtable_array[i].offset;
+            file_iter->at = cmap_subtable_begin;
 
             U16 format;
             platform_layer::read_big_endian_and_move_unchecked(file_iter, &format);
@@ -456,6 +458,18 @@ namespace tte { namespace ttf {
                 for (U16 j = 0; j < seg_count; ++j) {
                     platform_layer::read_big_endian_and_move_unchecked(file_iter, &subtable->id_range_offset_array[j]);
                 }
+
+                
+                const Length remaining_bytes = subtable->size - (file_iter->at - cmap_subtable_begin);
+                if (remaining_bytes % sizeof(U16) != 0) {
+                    return false;
+                }
+
+                subtable->glyph_index_array = static_cast<U16*>(malloc(remaining_bytes));
+                subtable->glyph_index_array_length = remaining_bytes / 2;
+                for (Length i = 0; i < subtable->glyph_index_array_length; ++i) {
+                    platform_layer::read_big_endian_and_move_unchecked(file_iter, &subtable->glyph_index_array[i]);
+                }
             } else {
                 cmap_table->encoding_subtable_array[i].subtable = static_cast<CMAPSubtable*>(malloc(sizeof(CMAPSubtable)));
                 memset(cmap_table->encoding_subtable_array[i].subtable, 0, sizeof(CMAPSubtable));
@@ -466,6 +480,65 @@ namespace tte { namespace ttf {
             file_iter->at = file_iter_at_copy;
         }
         return true;
+    }
+
+
+    [[nodiscard]] CMAPSubtableFormat4* get_format_4_table(CMAPTable* cmap_table) {
+        for (Length i = 0; i < cmap_table->number_encoding_subtables; ++i) {
+            if (cmap_table->encoding_subtable_array[i].platform_id == 0 &&
+                cmap_table->encoding_subtable_array[i].platform_specific_id == 3 &&
+                cmap_table->encoding_subtable_array[i].subtable->format == 4) {
+                    return static_cast<CMAPSubtableFormat4*>(cmap_table->encoding_subtable_array[i].subtable);
+            }
+        }
+        return nullptr;
+    }
+
+    [[nodiscard]] U16 character_code_to_glyph_id(U16 character_code, CMAPTable* cmap_table) {
+        CMAPSubtableFormat4* subtable = get_format_4_table(cmap_table);
+        if (!subtable) {
+            TTE_ASSERT(false);
+            return 0;
+        }
+
+        const Length seg_count = subtable->seg_count_times_2 / 2;
+
+        bool failed = false;
+
+        // find first end_code >= character_code
+        Length i = 0;
+        while (i < seg_count) {
+            if (subtable->end_code_array[i] >= character_code) {
+                break;
+            }
+            ++i;
+        }
+
+        if (i == seg_count) {
+            TTE_ASSERT(false);
+            return 0;
+        }
+
+        if (subtable->start_code_array[i] > character_code) {
+            return 0;
+        }
+
+        if (subtable->start_code_array[seg_count - 1] != 0xFFFF) {
+            TTE_ASSERT(false);
+            return 0;
+        }
+
+        if (subtable->id_range_offset_array[i] == 0) {
+            return subtable->id_delta_array[i] + character_code;
+        }
+
+        TTE_ASSERT(subtable->start_code_array[i] < character_code);
+        const Length glyph_id_array_index = ((subtable->id_range_offset_array[i] / 2) + (character_code - subtable->start_code_array[i])) - (seg_count - i);
+        if (subtable->glyph_index_array[glyph_id_array_index] == 0) {
+            return 0;
+        }
+
+        return subtable->glyph_index_array[glyph_id_array_index] + subtable->id_delta_array[i];
     }
 
     static void print(FontDirectory* font_directory) {
@@ -499,6 +572,9 @@ namespace tte { namespace ttf {
         TTE_DBG("==== CMAP Table");
         TTE_DBG("\tversion\tnumber_subtables");
         TTE_DBG("\t%d\t%d", cmap_table->version, cmap_table->number_encoding_subtables);
+        for (U16 character = 'A'; character < 'Z'; ++character) {
+            TTE_DBG("\t\t\t%c : %d", character, character_code_to_glyph_id(character, cmap_table));
+        }
         for (Length i = 0; i < cmap_table->number_encoding_subtables; ++i) {
             TTE_DBG("\t\t ==== Subtable");
             TTE_DBG("\t\t\tplatform_id: %d", cmap_table->encoding_subtable_array[i].platform_id);
@@ -513,6 +589,10 @@ namespace tte { namespace ttf {
                 TTE_DBG("\t\t\tsearch_range: %d", subtable->search_range);
                 TTE_DBG("\t\t\tentry_selector: %d", subtable->entry_selector);
                 TTE_DBG("\t\t\trange_shift: %d", subtable->range_shift);
+                TTE_DBG("\tsegment ranges:\tstart code\tend code\tid delta\tid range offset");
+                for (Length j = 0; j < subtable->seg_count_times_2 / 2; ++j) {
+                    TTE_DBG("\t--------------:\t%d\t%d\t%d\t%d", subtable->start_code_array[j], subtable->end_code_array[j], subtable->id_delta_array[j], subtable->id_range_offset_array[j]);
+                }
             }
         }
     }

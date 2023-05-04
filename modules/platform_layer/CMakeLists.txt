@@ -21,6 +21,7 @@ endif()
 set(
     include_files
     include/tte/platform_layer/platform_layer.hpp
+    include/tte/platform_layer/ttf.hpp
 )
 
 if (TTE_SDL)

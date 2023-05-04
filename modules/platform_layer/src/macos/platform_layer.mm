@@ -6,7 +6,8 @@
 #include <algorithm>
 #include <unistd.h>
 
-#include "../common.cpp"
+#include "../platform_layer_common.cpp"
+#include "../ttf_common.cpp"
 
 #define TTE_BITMAP_BITS_PER_COMPONENT 8
 #define TTE_BITMAP_BYTES_PER_PIXEL 4

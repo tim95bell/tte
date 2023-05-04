@@ -1,14 +1,28 @@
 
 #include <tte/app/app.hpp>
 #include <tte/platform_layer/platform_layer.hpp>
+#include <tte/platform_layer/ttf.hpp>
 #include <tte/common/number_types.hpp>
 #include <tte/common/assert.hpp>
 #include <tte/common/event.hpp>
 #include <tte/engine/engine.hpp>
 #include <cstdlib>
+// TODO(TB): remove this include
+#include <filesystem>
 
 namespace tte { namespace app {
     INIT_FUNCTION(init) {
+        const std::filesystem::path fonts_directory_path(
+            std::filesystem::relative(std::filesystem::path("resources/fonts")));
+        if (std::filesystem::directory_entry(fonts_directory_path).is_directory()) {
+            for (const auto& x : std::filesystem::directory_iterator(fonts_directory_path)) {
+                if (x.is_regular_file() && x.path().extension() == ".ttf") {
+                    printf(x.path().c_str());
+                    ttf::parse_file(std::filesystem::absolute(x.path()).c_str());
+                }
+            }
+        }
+
         if (!platform_layer::init(&app->platform_layer)) {
             return false;
         }

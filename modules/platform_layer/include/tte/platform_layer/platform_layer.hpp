@@ -12,6 +12,25 @@ namespace tte { namespace platform_layer {
         void (*handle_event)(common::Event);
     };
 
+    struct FileIter {
+        U8* begin;
+        U8* at;
+        Length size;
+    };
+
+    [[nodiscard]] extern U8* read_file(const char* file_name, Length* file_size);
+    [[nodiscard]] extern bool has_enough_space_from_at(platform_layer::FileIter* file_iter, Length required_size);
+    [[nodiscard]] extern bool has_enough_space_from_at(platform_layer::FileIter* file_iter, Length offset, Length required_size);
+    [[nodiscard]] extern bool has_enough_space_from_begin(platform_layer::FileIter* file_iter, Length required_size);
+    [[nodiscard]] extern bool has_enough_space_from_begin(platform_layer::FileIter* file_iter, Length offset, Length required_size);
+    extern inline void read_big_endian_unchecked(FileIter* file_iter, U16* result);
+    extern inline void read_big_endian_unchecked(FileIter* file_iter, U32* result);
+    extern inline void read_big_endian_and_move_unchecked(FileIter* file_iter, U16* result);
+    extern inline void read_big_endian_and_move_unchecked(FileIter* file_iter, U32* result);
+    [[nodiscard]] extern inline bool read_big_endian(FileIter* file_iter, U16* result);
+    [[nodiscard]] extern inline bool read_big_endian(FileIter* file_iter, U32* result);
+    [[nodiscard]] extern inline bool read_big_endian_and_move(FileIter* file_iter, U16* result);
+    [[nodiscard]] extern inline bool read_big_endian_and_move(FileIter* file_iter, U32* result);
 
     [[nodiscard]] extern bool init(PlatformLayer*);
     extern void deinit(PlatformLayer*);

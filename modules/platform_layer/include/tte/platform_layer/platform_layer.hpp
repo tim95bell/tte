@@ -4,6 +4,10 @@
 #include <tte/common/number_types.hpp>
 #include <tte/common/event.hpp>
 
+#define TTE_READ_BIG_ENDIAN_16(memory) (((memory)[0] << 8) | ((memory)[1] << 0))
+#define TTE_READ_BIG_ENDIAN_32(memory) (((memory)[0] << 24) | ((memory)[1] << 16) | ((memory)[2] << 8) | ((memory)[3] << 0))
+#define TTE_READ_BIG_ENDIAN_64(memory) (((memory)[0] << 56) | ((memory)[0] << 48) | ((memory)[0] << 40) | ((memory)[0] << 32) | ((memory)[0] << 24) | ((memory)[1] << 16) | ((memory)[2] << 8) | ((memory)[3] << 0))
+
 namespace tte { namespace platform_layer {
     struct Window;
     struct Font;
@@ -23,14 +27,40 @@ namespace tte { namespace platform_layer {
     [[nodiscard]] extern bool has_enough_space_from_at(platform_layer::FileIter* file_iter, Length offset, Length required_size);
     [[nodiscard]] extern bool has_enough_space_from_begin(platform_layer::FileIter* file_iter, Length required_size);
     [[nodiscard]] extern bool has_enough_space_from_begin(platform_layer::FileIter* file_iter, Length offset, Length required_size);
+
+    template <typename T>
+    extern inline void read_big_endian(U8* const memory, T* result);
+
+    template <typename T>
+    [[nodiscard]] inline U8* move(U8* const memory) {
+        return memory + sizeof(T);
+    }
+
+    template <typename T>
+    [[nodiscard]] inline U8* read_big_endian_and_move(U8* const memory, T* result) {
+        read_big_endian(memory, result);
+        return move<T>(memory);
+    }
+
+    [[nodiscard]] inline bool has_enough_space(const U8* const memory, Length required_size, const U8* const end_bound);
+    [[nodiscard]] inline bool has_enough_space(const U8* const memory, Length required_size, const U8* const start_bound, const U8* const end_bound);
+
     extern inline void read_big_endian_unchecked(FileIter* file_iter, U16* result);
     extern inline void read_big_endian_unchecked(FileIter* file_iter, U32* result);
+    extern inline void read_big_endian_unchecked(FileIter* file_iter, S16* result);
+    extern inline void read_big_endian_unchecked(FileIter* file_iter, S64* result);
     extern inline void read_big_endian_and_move_unchecked(FileIter* file_iter, U16* result);
     extern inline void read_big_endian_and_move_unchecked(FileIter* file_iter, U32* result);
+    extern inline void read_big_endian_and_move_unchecked(FileIter* file_iter, S16* result);
+    extern inline void read_big_endian_and_move_unchecked(FileIter* file_iter, S64* result);
     [[nodiscard]] extern inline bool read_big_endian(FileIter* file_iter, U16* result);
     [[nodiscard]] extern inline bool read_big_endian(FileIter* file_iter, U32* result);
+    [[nodiscard]] extern inline bool read_big_endian(FileIter* file_iter, S16* result);
+    [[nodiscard]] extern inline bool read_big_endian(FileIter* file_iter, S64* result);
     [[nodiscard]] extern inline bool read_big_endian_and_move(FileIter* file_iter, U16* result);
     [[nodiscard]] extern inline bool read_big_endian_and_move(FileIter* file_iter, U32* result);
+    [[nodiscard]] extern inline bool read_big_endian_and_move(FileIter* file_iter, S16* result);
+    [[nodiscard]] extern inline bool read_big_endian_and_move(FileIter* file_iter, S64* result);
 
     [[nodiscard]] extern bool init(PlatformLayer*);
     extern void deinit(PlatformLayer*);

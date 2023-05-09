@@ -11,6 +11,7 @@ namespace tte { namespace ttf {
     namespace required_tables_bitset {
         static const constexpr U16 cmap = 1 << 0;
         static const constexpr U16 glyf = 1 << 1;
+        // TODO(TB): apple said head could be replaced by bhead for fonts with no outlines
         static const constexpr U16 head = 1 << 2;
         static const constexpr U16 hhea = 1 << 3;
         static const constexpr U16 hmtx = 1 << 4;
@@ -482,7 +483,6 @@ namespace tte { namespace ttf {
         return true;
     }
 
-
     [[nodiscard]] CMAPSubtableFormat4* get_format_4_table(CMAPTable* cmap_table) {
         for (Length i = 0; i < cmap_table->number_encoding_subtables; ++i) {
             if (cmap_table->encoding_subtable_array[i].platform_id == 0 &&
@@ -541,6 +541,91 @@ namespace tte { namespace ttf {
         return subtable->glyph_index_array[glyph_id_array_index] + subtable->id_delta_array[i];
     }
 
+    struct Fixed {
+        U16 left;
+        U16 right;
+    };
+
+    inline void read(platform_layer::FileIter* file_iter, Fixed* result) {
+        result->left = TTE_READ_BIG_ENDIAN_16(file_iter->at);
+        result->right = TTE_READ_BIG_ENDIAN_16(file_iter->at);
+    }
+
+    inline void read_and_move(platform_layer::FileIter* file_iter, Fixed* result) {
+        read(file_iter, result);
+        file_iter->at += sizeof(result->left) + sizeof(result->right);
+    }
+
+    using LongDateTime = S64;
+    using FWord = S16;
+    using UFWord = U16;
+
+    struct HeadTable {
+        U16 major_version;
+        U16 minor_version;
+        Fixed font_revision;
+        U32 check_sum_adjustment;
+        U32 magic_number;
+        U16 flags;
+        U16 units_per_em;
+        LongDateTime created;
+        LongDateTime modified;
+        FWord x_min;
+        FWord y_min;
+        FWord x_max;
+        FWord y_max;
+        U16 mac_style;
+        U16 lowest_rec_ppem;
+        S16 font_direction_hint;
+        S16 index_to_loc_format;
+        S16 glyph_data_format;
+    };
+
+    static const constexpr Length head_table_size = sizeof(U16) * 6 + sizeof(Fixed) + sizeof(U32) * 2 + sizeof(LongDateTime) * 2 + sizeof(FWord) * 4 + sizeof(S16) * 3;
+
+    [[nodiscard]] static bool read_head_table(platform_layer::FileIter* file_iter, FontDirectory* font_directory, HeadTable* head_table) {
+        TableDirectory* table_directory = find_first_table_directory_with_tag(font_directory, TableDirectory_Tag::HEAD);
+        if (!table_directory) {
+            return false;
+        }
+
+        if (table_directory->size < head_table_size) {
+            return false;
+        }
+
+        // table directories have already been validated that they are pointing to something in bounds
+        TTE_ASSERT(platform_layer::has_enough_space_from_begin(file_iter, table_directory->offset, table_directory->size));
+        
+        file_iter->at = file_iter->begin + table_directory->offset;
+        read_big_endian_and_move_unchecked(file_iter, &head_table->major_version);
+        TTE_ASSERT(head_table->major_version == 1);
+        read_big_endian_and_move_unchecked(file_iter, &head_table->minor_version);
+        TTE_ASSERT(head_table->minor_version == 0);
+        read_and_move(file_iter, &head_table->font_revision);
+        read_big_endian_and_move_unchecked(file_iter, &head_table->check_sum_adjustment);
+        read_big_endian_and_move_unchecked(file_iter, &head_table->magic_number);
+        TTE_ASSERT(head_table->magic_number == 0x5F0F3CF5);
+        read_big_endian_and_move_unchecked(file_iter, &head_table->flags);
+        read_big_endian_and_move_unchecked(file_iter, &head_table->units_per_em);
+        TTE_ASSERT(head_table->units_per_em >= 64 && head_table->units_per_em <= 16384);
+        read_big_endian_and_move_unchecked(file_iter, &head_table->created);
+        read_big_endian_and_move_unchecked(file_iter, &head_table->modified);
+        read_big_endian_and_move_unchecked(file_iter, &head_table->x_min);
+        read_big_endian_and_move_unchecked(file_iter, &head_table->y_min);
+        read_big_endian_and_move_unchecked(file_iter, &head_table->x_max);
+        read_big_endian_and_move_unchecked(file_iter, &head_table->y_max);
+        read_big_endian_and_move_unchecked(file_iter, &head_table->mac_style);
+        read_big_endian_and_move_unchecked(file_iter, &head_table->lowest_rec_ppem);
+        read_big_endian_and_move_unchecked(file_iter, &head_table->font_direction_hint);
+        TTE_ASSERT(head_table->font_direction_hint == -2 || head_table->font_direction_hint == -1 || head_table->font_direction_hint == 0 || head_table->font_direction_hint == 1 || head_table->font_direction_hint == 2);
+        read_big_endian_and_move_unchecked(file_iter, &head_table->index_to_loc_format);
+        TTE_ASSERT(head_table->index_to_loc_format == 0 || head_table->index_to_loc_format == 1);
+        read_big_endian_and_move_unchecked(file_iter, &head_table->glyph_data_format);
+        TTE_ASSERT(head_table->glyph_data_format == 0);
+
+        return true;
+    }
+
     static void print(FontDirectory* font_directory) {
         TTE_DBG("tag\tlength\toffset\n");
         for (Length i = 0; i < font_directory->offset_subtable.num_tables; ++i) {
@@ -597,6 +682,90 @@ namespace tte { namespace ttf {
         }
     }
 
+    enum class OffsetSize {
+        Short16,
+        Long32,
+    };
+
+    struct MAXPTable {
+        U16 major_version;
+        U16 minor_version;
+        U16 num_glyphs;
+    };
+
+    static const constexpr Length maxp_table_size = sizeof(U16) * 16;
+
+    [[nodiscard]] static bool read_maxp_table(platform_layer::FileIter* file_iter, FontDirectory* font_directory, MAXPTable* maxp_table) {
+        TableDirectory* table_directory = find_first_table_directory_with_tag(font_directory, TableDirectory_Tag::MAXP);
+        if (!table_directory) {
+            return false;
+        }
+
+        if (table_directory->size < maxp_table_size) {
+            return false;
+        }
+
+        // table directories have already been validated that they are pointing to something in bounds
+        TTE_ASSERT(platform_layer::has_enough_space_from_begin(file_iter, table_directory->offset, table_directory->size));
+        
+        file_iter->at = file_iter->begin + table_directory->offset;
+
+        read_big_endian_and_move_unchecked(file_iter, &maxp_table->major_version);
+        TTE_ASSERT(maxp_table->major_version == 1);
+        read_big_endian_and_move_unchecked(file_iter, &maxp_table->minor_version);
+        TTE_ASSERT(maxp_table->minor_version == 0);
+        read_big_endian_and_move_unchecked(file_iter, &maxp_table->num_glyphs);
+
+        return true;
+    }
+
+    struct LOCATable {
+        U32* offsets;
+        U16 length;
+    };
+
+    [[nodiscard]] static bool read_loca_table(platform_layer::FileIter* file_iter, FontDirectory* font_directory, LOCATable* loca_table, OffsetSize offset_size, U16 num_glyphs) {
+        TableDirectory* table_directory = find_first_table_directory_with_tag(font_directory, TableDirectory_Tag::LOCA);
+        if (!table_directory) {
+            return false;
+        }
+
+        if (table_directory->size < ((num_glyphs + 1) * (offset_size == OffsetSize::Short16 ? sizeof(S16) : sizeof(S32)))) {
+            return false;
+        }
+
+        // table directories have already been validated that they are pointing to something in bounds
+        TTE_ASSERT(platform_layer::has_enough_space_from_begin(file_iter, table_directory->offset, table_directory->size));
+        TTE_ASSERT(table_directory->size == ((num_glyphs + 1) * (offset_size == OffsetSize::Short16 ? sizeof(S16) : sizeof(S32))));
+        
+        file_iter->at = file_iter->begin + table_directory->offset;
+
+        loca_table->offsets = static_cast<U32*>(malloc(sizeof(U32) * (num_glyphs + 1)));
+        // TODO(TB): should we look for the extra last glyph in the loop and use that as the number of glyphs instead? incase there is less
+        loca_table->length = num_glyphs;
+        if (offset_size == OffsetSize::Short16) {
+            for (Length i = 0; i < num_glyphs + 1; ++i) {
+                read_big_endian_and_move_unchecked(file_iter, (U16*)&(loca_table->offsets[i]));
+                loca_table->offsets[i] *= 2;
+            }
+        } else {
+            TTE_ASSERT(offset_size == OffsetSize::Long32);
+            for (Length i = 0; i < num_glyphs + 1; ++i) {
+                read_big_endian_and_move_unchecked(file_iter, &(loca_table->offsets[i]));
+            }
+        }
+
+        return true;
+    }
+
+    static void print(LOCATable* loca_table) {
+        TTE_DBG("==== LOCA Table");
+        TTE_DBG("\tindex\toffset\tsize");
+        for (Length i = 0; i < loca_table->length - 1; ++i) {
+            TTE_DBG("\t%d\t%d\t%d", i, loca_table->offsets[i], loca_table->offsets[i + 1] - loca_table->offsets[i]);
+        }
+    }
+
     void parse_file(const char* file_path) {
         Length file_size;
         platform_layer::FileIter file_iter;
@@ -608,15 +777,26 @@ namespace tte { namespace ttf {
 
         FontDirectory font_directory{};
         if (read_font_directory(&file_iter, &font_directory)) {
-            print(&font_directory);
+            //print(&font_directory);
             NameTable name_table{};
             if (read_name_table(&file_iter, &font_directory, &name_table)) {
-                print_english(&file_iter, &name_table);
+                //print_english(&file_iter, &name_table);
             }
             free_name_table(&name_table);
+            HeadTable head_table{};
+            if (read_head_table(&file_iter, &font_directory, &head_table)) {
+                //TTE_DBG("success reading head table, offset: %s", head_table.index_to_loc_format == 0 ? "short" : "long");
+                MAXPTable maxp_table{};
+                if (read_maxp_table(&file_iter, &font_directory, &maxp_table)) {
+                    //TTE_DBG("success reqding maxp table, num glyphs: %d", maxp_table.num_glyphs);
+                    LOCATable loca_table{};
+                    read_loca_table(&file_iter, &font_directory, &loca_table, head_table.index_to_loc_format == 0 ? OffsetSize::Short16 : OffsetSize::Long32, maxp_table.num_glyphs);
+                    print(&loca_table);
+                }
+            }
             CMAPTable cmap_table{};
             if (read_cmap_table(&file_iter, &font_directory, &cmap_table)) {
-                print(&cmap_table);
+                //print(&cmap_table);
             }
             free_cmap_table(&cmap_table);
         }
